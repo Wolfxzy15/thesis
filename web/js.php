@@ -133,13 +133,13 @@ $residentID = $_SESSION['residentID'];
 include 'include/db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['register1'])) {
-        $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
-    } elseif (isset($_POST['register2'])) {
-        $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
-    } elseif (isset($_POST['register3'])) {
-        $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
-    }
+    // if (isset($_POST['register1'])) {
+    //     $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+    // } elseif (isset($_POST['register2'])) {
+    //     $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+    // } elseif (isset($_POST['register3'])) {
+    //     $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+    // }
 
     if ($conn->query($sql) === TRUE) {
         echo "Registration successful.";
