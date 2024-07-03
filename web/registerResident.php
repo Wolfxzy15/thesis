@@ -1,4 +1,5 @@
 <?php
+session_start();
 require 'residentFunction.php';
 if (isset($_SESSION["residentID"])) {
     header("Location: index.php");

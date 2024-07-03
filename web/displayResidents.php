@@ -4,7 +4,7 @@ session_start();
 if(isset($_POST['register'])){
     $id = $_POST['register']; // Capture the residentID from the button value
     $_SESSION['residentID'] = $id;
-    header("Location: js.php"); // Redirect to js.php to use the session variable
+    header("Location: shortestdistance.php"); // Redirect to js.php to use the session variable
     exit();
 }
 ?>
