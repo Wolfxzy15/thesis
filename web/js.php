@@ -147,6 +147,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Error: " . $conn->error;
     }
 
+    //this is test for register branch
+
     $conn->close();
 }
 ?>
