@@ -138,13 +138,36 @@ $conn->close();
 <?php
 
 
-// Check if residentID is set in session
+
 if (!isset($_SESSION['residentID'])) {
     die("Session residentID not set.");
 }
 
 $residentID = $_SESSION['residentID'];
-include 'include/db.php'; // Adjust path as necessary
+include 'include/db.php';
+
+$sql = "SELECT COUNT(*) AS row_count from evac1";
+$sql = "SELECT COUNT(*) AS row_count FROM evac2;";
+$sql = "SELECT COUNT(*) AS row_count from evac3";
+
+function getRowCount($conn, $tableName) {
+    $sql = "SELECT COUNT(*) AS row_count FROM $tableName";
+    $result = $conn->query($sql);
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return $row["row_count"];
+    }
+    return 0;
+}
+
+// Get row counts from the tables
+$evac1_count = getRowCount($conn, 'evac1');
+$evac2_count = getRowCount($conn, 'evac2');
+$evac3_count = getRowCount($conn, 'evac3');
+
+echo "Evacuation Center 1 Capacity: " . $evac1_count . "/50<br>";
+echo "Evacuation Center 2 Capacity: " . $evac2_count . "/50<br>";
+echo "Evacuation Center 3 Capacity: " . $evac3_count . "/50<br>";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Initialize variables
@@ -155,16 +178,74 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if the form was submitted for registration
     if (isset($_POST['mainregister'])) {
         // Determine which evacuation center is nearest
-        $nearest_evacuation = min($evacuation1, $evacuation2, $evacuation3);
+        $nevacuation = array($evacuation1, $evacuation2, $evacuation3);
+        sort($nevacuation);
+
 
         // Directly insert values into SQL query
-        $sql = "";
-        if ($nearest_evacuation == $evacuation1) {
-            $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
-        } else if ($nearest_evacuation == $evacuation2) {
-            $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
-        } else if ($nearest_evacuation == $evacuation3) {
-            $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+        if ($nevacuation[0] == $evacuation1) {
+            if ($evac1_count < 5) {
+                $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+            } else if ($nevacuation[1] == $evacuation2){
+                if ($evac2_count < 5){
+                    $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                } else if ($nevacuation[2] == $evacuation3){
+                    if ($evac3_count < 5){
+                        $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                    }
+                }
+            } else if ($nevacuation[1] == $evacuation3){
+                if ($evac3_count < 5){
+                    $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                } else if ($nevacuation[2] == $evacuation2){
+                    if ($evac2_count < 5){
+                        $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                    }
+                }
+            } 
+            
+        } else if ($nevacuation[0] == $evacuation2) {
+            if ($evac2_count < 5) {
+                $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+            } else if ($nevacuation[1] == $evacuation1){
+                if ($evac1_count < 5){
+                    $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                } else if ($nevacuation[2] == $evacuation3){
+                    if ($evac3_count < 5){
+                        $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                    }
+                }
+            } else if ($nevacuation[1] == $evacuation3){
+                if ($evac3_count < 5){
+                    $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                } else if ($nevacuation[2] == $evacuation1){
+                    if ($evac1_count < 5){
+                        $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                    }
+                }
+            } 
+        } else if ($nevacuation[0] == $evacuation3) {
+            if ($evac3_count < 5) {
+                $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+            } else if ($nevacuation[1] == $evacuation1){
+                if ($evac1_count < 5){
+                    $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                } else if ($nevacuation[2] == $evacuation2){
+                    if ($evac2_count < 5){
+                        $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                    }
+                }
+            } else if ($nevacuation[1] == $evacuation2){
+                if ($evac2_count < 5){
+                    $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                } else if ($nevacuation[2] == $evacuation1){
+                    if ($evac1_count < 5){
+                        $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                    }
+                }
+            } 
+        } else {
+            echo "All evacuation centers are full";
         }
 
         // Check if SQL statement is valid
@@ -179,7 +260,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 } else {
-    echo "No POST data received.";
+    echo "Not yet registered.";
 }
 
 $conn->close();
