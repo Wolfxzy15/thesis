@@ -1,4 +1,4 @@
-<?php
+`<?php
 session_start();
 $residentID = $_SESSION['residentID'];
 $fname = $_SESSION['fName'];
@@ -267,112 +267,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     echo "Not yet registered.";
 }
 
-$sql = "SELECT residentid, fname, lastname FROM evac1";
+$sql1 = "SELECT residentid, fname, lastname FROM evac1";
+$sql2 = "SELECT residentid, fname, lastname FROM evac2";
+$sql3 = "SELECT residentid, fname, lastname FROM evac3";
 
-// Execute SQL query
-$result = $conn->query($sql);
+// Execute SQL queries
+$result1 = $conn->query($sql1);
+$result2 = $conn->query($sql2);
+$result3 = $conn->query($sql3);
 
-// Output table header
-echo '<table class="table">
-        <thead>
-            <tr>
-                <th scope="col">Resident ID</th>
-                <th scope="col">First Name</th>
-                <th scope="col">Last Name</th>
-            </tr>
-        </thead>
-        <tbody>';
+// Function to generate table output
+function generateTable($result, $tableId) {
+    if ($result->num_rows > 0) {
+        echo '<table id="' . $tableId . '" class="table table-sm">';
+        echo '<thead>
+                <tr>
+                    <th scope="col">Resident ID</th>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                </tr>
+            </thead>
+            <tbody>';
 
-// Check if there are rows returned
-if ($result->num_rows > 0) {
-    // Output data of each row
-    while ($row = $result->fetch_assoc()) {
-        echo '<tr>
-                <td>' . $row["residentid"] . '</td>
-                <td>' . $row["fname"] . '</td>
-                <td>' . $row["lastname"] . '</td>
-              </tr>';
+        while ($row = $result->fetch_assoc()) {
+            echo '<tr>
+                    <td>' . $row["residentid"] . '</td>
+                    <td>' . $row["fname"] . '</td>
+                    <td>' . $row["lastname"] . '</td>
+                </tr>';
+        }
+
+        echo '</tbody></table>';
+    } else {
+        echo '<p>No results for ' . $tableId . '</p>';
     }
-} else {
-    // If no results, display a row indicating no data found
-    echo '<tr><td colspan="3">0 results</td></tr>';
 }
 
-// Close table body and table tag
-echo '</tbody>
-      </table>';
+// Output each table vertically aligned to the left
+echo '<div class="container-fluid">';
+echo '<div class="row">';
+echo '<div class="col-md-4">';
+generateTable($result1, "evac1");
+echo '</div>';
+echo '</div>';
 
+echo '<div class="row">';
+echo '<div class="col-md-4">';
+generateTable($result2, "evac2");
+echo '</div>';
+echo '</div>';
 
-      $sql = "SELECT residentid, fname, lastname FROM evac2";
+echo '<div class="row">';
+echo '<div class="col-md-4">';
+generateTable($result3, "evac3");
+echo '</div>';
+echo '</div>';
+echo '</div>';
 
-      // Execute SQL query
-      $result = $conn->query($sql);
-      
-      // Output table header
-      echo '<table class="table">
-              <thead>
-                  <tr>
-                      <th scope="col">Resident ID</th>
-                      <th scope="col">First Name</th>
-                      <th scope="col">Last Name</th>
-                  </tr>
-              </thead>
-              <tbody>';
-      
-      // Check if there are rows returned
-      if ($result->num_rows > 0) {
-          // Output data of each row
-          while ($row = $result->fetch_assoc()) {
-              echo '<tr>
-                      <td>' . $row["residentid"] . '</td>
-                      <td>' . $row["fname"] . '</td>
-                      <td>' . $row["lastname"] . '</td>
-                    </tr>';
-          }
-      } else {
-          // If no results, display a row indicating no data found
-          echo '<tr><td colspan="3">0 results</td></tr>';
-      }
-      
-      // Close table body and table tag
-      echo '</tbody>
-            </table>';
-
-
-            $sql = "SELECT residentid, fname, lastname FROM evac3";
-
-            // Execute SQL query
-            $result = $conn->query($sql);
-            
-            // Output table header
-            echo '<table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Resident ID</th>
-                            <th scope="col">First Name</th>
-                            <th scope="col">Last Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>';
-            
-            // Check if there are rows returned
-            if ($result->num_rows > 0) {
-                // Output data of each row
-                while ($row = $result->fetch_assoc()) {
-                    echo '<tr>
-                            <td>' . $row["residentid"] . '</td>
-                            <td>' . $row["fname"] . '</td>
-                            <td>' . $row["lastname"] . '</td>
-                          </tr>';
-                }
-            } else {
-                // If no results, display a row indicating no data found
-                echo '<tr><td colspan="3">0 results</td></tr>';
-            }
-            
-            // Close table body and table tag
-            echo '</tbody>
-                  </table>';
 
 $conn->close();
 ?>
