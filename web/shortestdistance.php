@@ -164,9 +164,9 @@ $evac1_count = getRowCount($conn, 'evac1');
 $evac2_count = getRowCount($conn, 'evac2');
 $evac3_count = getRowCount($conn, 'evac3');
 
-echo "Evacuation Center 1 Capacity: " . $evac1_count . "/50<br>";
-echo "Evacuation Center 2 Capacity: " . $evac2_count . "/50<br>";
-echo "Evacuation Center 3 Capacity: " . $evac3_count . "/50<br>";
+echo "Evacuation Center 1 Capacity: " . $evac1_count . "/5<br>";
+echo "Evacuation Center 2 Capacity: " . $evac2_count . "/5<br>";
+echo "Evacuation Center 3 Capacity: " . $evac3_count . "/5<br>";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Initialize variables
