@@ -1,11 +1,27 @@
 <?php
 session_start();
 
-if(isset($_POST['register'])){
+if (isset($_POST['register'])) {
     $id = $_POST['register']; // Capture the residentID from the button value
-    $_SESSION['residentID'] = $id;
-    header("Location: shortestdistance.php"); // Redirect to js.php to use the session variable
-    exit();
+
+    include 'include/db.php';
+    
+    // Fetch the resident's details from the database
+    $sql = "SELECT fName, lastName FROM tbl_residents WHERE residentID = $id";
+    $result = $conn->query($sql);
+    
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        
+        $_SESSION['residentID'] = $id;
+        $_SESSION['fName'] = $row['fName'];
+        $_SESSION['lastName'] = $row['lastName'];
+        
+        header("Location: shortestdistance.php"); // Redirect to js.php to use the session variables
+        exit();
+    } else {
+        echo "No resident found with ID: $id";
+    }
 }
 ?>
 

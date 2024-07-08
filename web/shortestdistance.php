@@ -1,7 +1,12 @@
 <?php
 session_start();
 $residentID = $_SESSION['residentID'];
+$fname = $_SESSION['fName'];
+$lastName = $_SESSION['lastName'];
 include 'include/db.php';
+
+echo $fname;
+echo $lastName;
 
 $sql = "SELECT latitude, longitude FROM tbl_residents WHERE residentID = $residentID";
 $result = $conn->query($sql);
@@ -89,7 +94,7 @@ $conn->close();
     </script>
     </div>
     <form method="post">
-    <div style="display: inline-block;">
+    <div style="display: inline-block;" name="evac">
     
     <table class="table" >
   <thead>
@@ -184,62 +189,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Directly insert values into SQL query
         if ($nevacuation[0] == $evacuation1) {
             if ($evac1_count < 5) {
-                $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                $sql = "INSERT INTO evac1 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
             } else if ($nevacuation[1] == $evacuation2){
                 if ($evac2_count < 5){
-                    $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                    $sql = "INSERT INTO evac2 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                 } else if ($nevacuation[2] == $evacuation3){
                     if ($evac3_count < 5){
-                        $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                        $sql = "INSERT INTO evac3 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                     }
                 }
             } else if ($nevacuation[1] == $evacuation3){
                 if ($evac3_count < 5){
-                    $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                    $sql = "INSERT INTO evac3 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                 } else if ($nevacuation[2] == $evacuation2){
                     if ($evac2_count < 5){
-                        $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                        $sql = "INSERT INTO evac2 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                     }
                 }
             } 
             
         } else if ($nevacuation[0] == $evacuation2) {
             if ($evac2_count < 5) {
-                $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                $sql = "INSERT INTO evac2 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
             } else if ($nevacuation[1] == $evacuation1){
                 if ($evac1_count < 5){
-                    $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                    $sql = "INSERT INTO evac1 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                 } else if ($nevacuation[2] == $evacuation3){
                     if ($evac3_count < 5){
-                        $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                        $sql = "INSERT INTO evac3 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                     }
                 }
             } else if ($nevacuation[1] == $evacuation3){
                 if ($evac3_count < 5){
-                    $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                    $sql = "INSERT INTO evac3 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                 } else if ($nevacuation[2] == $evacuation1){
                     if ($evac1_count < 5){
-                        $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                        $sql = "INSERT INTO evac1 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                     }
                 }
             } 
         } else if ($nevacuation[0] == $evacuation3) {
             if ($evac3_count < 5) {
-                $sql = "INSERT INTO evac3 (residentID) VALUES ($residentID)";
+                $sql = "INSERT INTO evac3 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
             } else if ($nevacuation[1] == $evacuation1){
                 if ($evac1_count < 5){
-                    $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                    $sql = "INSERT INTO evac1 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                 } else if ($nevacuation[2] == $evacuation2){
                     if ($evac2_count < 5){
-                        $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                        $sql = "INSERT INTO evac2 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                     }
                 }
             } else if ($nevacuation[1] == $evacuation2){
                 if ($evac2_count < 5){
-                    $sql = "INSERT INTO evac2 (residentID) VALUES ($residentID)";
+                    $sql = "INSERT INTO evac2 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                 } else if ($nevacuation[2] == $evacuation1){
                     if ($evac1_count < 5){
-                        $sql = "INSERT INTO evac1 (residentID) VALUES ($residentID)";
+                        $sql = "INSERT INTO evac1 (residentID, fname, lastName) VALUES ('$residentID', '$fname', '$lastName')";
                     }
                 }
             } 
@@ -261,6 +266,113 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 } else {
     echo "Not yet registered.";
 }
+
+$sql = "SELECT residentid, fname, lastname FROM evac1";
+
+// Execute SQL query
+$result = $conn->query($sql);
+
+// Output table header
+echo '<table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Resident ID</th>
+                <th scope="col">First Name</th>
+                <th scope="col">Last Name</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+// Check if there are rows returned
+if ($result->num_rows > 0) {
+    // Output data of each row
+    while ($row = $result->fetch_assoc()) {
+        echo '<tr>
+                <td>' . $row["residentid"] . '</td>
+                <td>' . $row["fname"] . '</td>
+                <td>' . $row["lastname"] . '</td>
+              </tr>';
+    }
+} else {
+    // If no results, display a row indicating no data found
+    echo '<tr><td colspan="3">0 results</td></tr>';
+}
+
+// Close table body and table tag
+echo '</tbody>
+      </table>';
+
+
+      $sql = "SELECT residentid, fname, lastname FROM evac2";
+
+      // Execute SQL query
+      $result = $conn->query($sql);
+      
+      // Output table header
+      echo '<table class="table">
+              <thead>
+                  <tr>
+                      <th scope="col">Resident ID</th>
+                      <th scope="col">First Name</th>
+                      <th scope="col">Last Name</th>
+                  </tr>
+              </thead>
+              <tbody>';
+      
+      // Check if there are rows returned
+      if ($result->num_rows > 0) {
+          // Output data of each row
+          while ($row = $result->fetch_assoc()) {
+              echo '<tr>
+                      <td>' . $row["residentid"] . '</td>
+                      <td>' . $row["fname"] . '</td>
+                      <td>' . $row["lastname"] . '</td>
+                    </tr>';
+          }
+      } else {
+          // If no results, display a row indicating no data found
+          echo '<tr><td colspan="3">0 results</td></tr>';
+      }
+      
+      // Close table body and table tag
+      echo '</tbody>
+            </table>';
+
+
+            $sql = "SELECT residentid, fname, lastname FROM evac3";
+
+            // Execute SQL query
+            $result = $conn->query($sql);
+            
+            // Output table header
+            echo '<table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Resident ID</th>
+                            <th scope="col">First Name</th>
+                            <th scope="col">Last Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+            
+            // Check if there are rows returned
+            if ($result->num_rows > 0) {
+                // Output data of each row
+                while ($row = $result->fetch_assoc()) {
+                    echo '<tr>
+                            <td>' . $row["residentid"] . '</td>
+                            <td>' . $row["fname"] . '</td>
+                            <td>' . $row["lastname"] . '</td>
+                          </tr>';
+                }
+            } else {
+                // If no results, display a row indicating no data found
+                echo '<tr><td colspan="3">0 results</td></tr>';
+            }
+            
+            // Close table body and table tag
+            echo '</tbody>
+                  </table>';
 
 $conn->close();
 ?>

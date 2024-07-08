@@ -5,3 +5,4 @@ $password = ""; // Change to your database password
 $dbname = "barangay"; // Change to your database name
 
 $conn = new mysqli("$servername", $username, $password, $dbname);
+?>
