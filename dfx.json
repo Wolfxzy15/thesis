@@ -2,7 +2,7 @@
     "canisters": {
         "icp_simple_site": {
             "frontend": {
-                "entrypoint": "C:\Users\ICP\Desktop\hello.html"
+                "entrypoint": "C:/Users/ICP/Desktop/hello.html"
             },
             "source": ["src"],
             "type": "assets"
