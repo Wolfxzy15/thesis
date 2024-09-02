@@ -166,7 +166,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$familyId = uniqid('fam_', true); 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $lastNames = $_POST['lastName'];
@@ -203,7 +202,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         $email = $emailAdds[$i];
         $pwd = $pwds[$i];
 
-        $sql = "INSERT INTO resident (familyID, lname, fname, mname, age, kinship, sex, civilStatus, dateOfBirth, placeOfBirth, height, weights, contact, religion, email, pwd) VALUES ('$familyId', '$lname', '$fname', '$mname', '$age', '$kin', '$sex', '$civil', '$dob', '$pob', '$h', '$w', '$contact', '$rel', '$email', '$pwd')";
+        $sql = "INSERT INTO resident (lname, fname, mname, age, kinship, sex, civilStatus, dateOfBirth, placeOfBirth, height, weights, contact, religion, email, pwd) VALUES ('$lname', '$fname', '$mname', '$age', '$kin', '$sex', '$civil', '$dob', '$pob', '$h', '$w', '$contact', '$rel', '$email', '$pwd')";
+
+
+
 
         if ($conn->query($sql) === TRUE) {
             echo "New record created successfully for Family Member $i<br>";
@@ -211,6 +213,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
             echo "Error: " . $sql . "<br><br><br>" . $conn->error;
         }
     }
+
+    if (count($lastNames) > 0){
+        $lastname = $lastNames[0];
+        $firstname = $firstNames[0];
+    }
+
+        $sqlFam = "INSERT INTO families (lname, fname) VALUES ('$lname', '$fname')";
+
+        if ($conn->query($sqlFam) === TRUE) {
+            echo "Family record created successfully<br>";
+        } else {
+            echo "Error: " . $sqlFam . "<br><br><br>" . $conn->error;
+        }
 }
 
 $conn->close();
