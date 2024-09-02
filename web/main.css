@@ -1,6 +1,5 @@
-
-* {
-	font-family: Arial, sans-serif;
+body {
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
@@ -99,4 +98,37 @@ main {
     .sidebar.active~#map .leaflet-control {
         display: none;
     }
+}
+
+#map {
+    height: 400px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.table-container {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 650px;
+}
+
+th,
+td {
+    white-space: wrap;
+}
+
+table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 2;
+}
+
+.button {
+    width: 1000px;
 }
