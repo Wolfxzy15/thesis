@@ -40,23 +40,23 @@
                 <div class="row row-cols-2 mb-3">
                     <div class="col-md-4 mb-2"> 
                             <label for="lastName"${formCount}>Lastname:</label>
-                            <input type="text" class="form-control" placeholder="Last name" id="lastName${formCount}" name="lastName">
+                            <input type="text" class="form-control" placeholder="Last name" id="lastName${formCount}" name="lastName[]">
                         </div>
                         <div class="col-md-4 mb-2">
                             <label for="fName${formCount}">Firstname:</label>
-                            <input type="text" class="form-control" placeholder="First name" id="fName${formCount}" name="fName">
+                            <input type="text" class="form-control" placeholder="First name" id="fName${formCount}" name="fName[]">
                         </div>
                         <div class="col-md-4">
                             <label for="mName${formCount}">Middlename:</label>
-                            <input type="text" class="form-control" placeholder="Middle name" id="mName${formCount}" name="mName">
+                            <input type="text" class="form-control" placeholder="Middle name" id="mName${formCount}" name="mName[]">
                         </div>
                         <div class="col-md-4">
                             <label for="age${formCount}">Age:</label>
-                            <input type="text" class="form-control" placeholder="" id="age${formCount}" name="age">
+                            <input type="text" class="form-control" placeholder="" id="age${formCount}" name="age[]">
                         </div>
                         <div class="col-md-7">
                             <label for="kinship${formCount}">Kinship Position:</label>
-                            <select id="kinship${formCount}" name="kinship" class="form-control">
+                            <select id="kinship${formCount}" name="kinship[]" class="form-control">
                                 <option value="">--Position--</option>
                                 <option value="Head of Family">Head of Family</option>
                                 <option value="Spouse">Spouse</option>
@@ -71,17 +71,17 @@
                         <div class="col-md-2 mb-2">
                             <label for="sex${formCount}">Sex:</label>
                             <div>
-                                <input type="radio" value="Female" id="female${formCount}" name="sex">
+                                <input type="radio" value="Female" id="female${formCount}" name="sex[]">
                                 <label for="female">Female</label>
                             </div>
                             <div>
-                                <input type="radio" value="Male" id="male${formCount}" name="sex">
+                                <input type="radio" value="Male" id="male${formCount}" name="sex[]">
                                 <label for="male">Male</label>
                             </div>
                         </div>
                         <div class="col-md-4 mb-2">
                             <label for="civilStat${formCount}">Civil Status:</label>
-                            <select id="civilStat${formCount}" name="civilStat" class="form-control">
+                            <select id="civilStat${formCount}" name="civilStat[]" class="form-control">
                                 <option value="">--Status--</option>
                                 <option value="Single">Single</option>
                                 <option value="Married">Married</option>
@@ -91,42 +91,38 @@
                         </div>
                         <div class="col-md-2">
                             <label for="dateOfBirth${formCount}">Date Of Birth:</label>
-                            <input type="text" class="form-control" placeholder="mm/dd/yyyy" id="dateOfBirth${formCount}" name="dateOfBirth">
+                            <input type="text" class="form-control" placeholder="mm/dd/yyyy" id="dateOfBirth${formCount}" name="dateOfBirth[]">
                         </div>
                         <div class="col-md-4">
                             <label for="placeOfBirth${formCount}">Place Of Birth:</label>
-                            <input type="text" class="form-control" placeholder="" id="placeOfBirth${formCount}" name="placeOfBirth">
+                            <input type="text" class="form-control" placeholder="" id="placeOfBirth${formCount}" name="placeOfBirth[]">
                         </div>
                     </div>
                     <div class="row row-cols-2 mb-3"> 
                         <div class="col-md-2 mb-2">
                             <label for="height${formCount}">Height:</label>
-                            <input type="number" class="form-control" placeholder="cm" id="height${formCount}" name="height">
+                            <input type="number" class="form-control" placeholder="cm" id="height${formCount}" name="height[]">
                         </div>
                         <div class="col-md-2 mb-2">
                             <label for="weight${formCount}">Weight:</label>
-                            <input type="number" class="form-control" placeholder="kg" id="weight${formCount}" name="weight">
+                            <input type="number" class="form-control" placeholder="kg" id="weight${formCount}" name="weight[]">
                         </div>
                         <div class="col-md-4 mb-2">
                             <label for="contactNo${formCount}">Contact Number:</label>
-                            <input type="text" class="form-control" placeholder="" id="contactNo${formCount}" name="contactNo">
+                            <input type="text" class="form-control" placeholder="" id="contactNo${formCount}" name="contactNo[]">
                         </div>
                         <div class="col-md-4 mb-4">
                             <label for="religion${formCount}">Religion:</label>
-                            <input type="text" class="form-control" placeholder="ex.Roman Catholic" id="religion${formCount}" name="religion">
+                            <input type="text" class="form-control" placeholder="ex.Roman Catholic" id="religion${formCount}" name="religion[]">
                         </div>
                         <div class="col-md-4">
                             <label for="emailAdd${formCount}">Email Address:</label>
-                            <input type="text" class="form-control" placeholder="@email.com" id="emailAdd${formCount}" name="emailAdd">
+                            <input type="text" class="form-control" placeholder="@email.com" id="emailAdd${formCount}" name="emailAdd[]">
                         </div>
-                        <div class="col-md-4 mb-4">
-                            <label for="famComposition${formCount}">Number of Household Occupants:</label>
-                            <input type="text" class="form-control" placeholder="" id="famComposition${formCount}" name="famComposition">
-                        </div><br>
                         <div class="col-md-4">
                             <label for="pwd${formCount}">Are you a person with disability?</label>
-                            <input type="radio" value="YES" id="yes${formCount}" name="pwd">YES
-                            <input type="radio" value="NO" id="no${formCount}" name="pwd">NO
+                            <input type="radio" value="YES" id="yes${formCount}" name="pwd[]">YES
+                            <input type="radio" value="NO" id="no${formCount}" name="pwd[]">NO
                         </div>
                 </div>
             </div><br>
@@ -150,4 +146,69 @@
 
     </body>
 
-    </html>
+</html>
+
+<?php
+
+
+$servername = "localhost"; // Change to your database server name
+$username = "root"; // Change to your database username
+$password = ""; // Change to your database password
+$dbname = "family"; // Change to your database name
+
+// Create a connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
+    $lastNames = $_POST['lastName'];
+    $firstNames = $_POST['fName'];
+    $middleNames = $_POST['mName'];
+    $ages = $_POST['age'];
+    $kinships = $_POST['kinship'];
+    $sexs = $_POST['sex'];
+    $civilStats = $_POST['civilStat'];
+    $dateOfBirths = $_POST['dateOfBirth'];
+    $placeOfBirths = $_POST['placeOfBirth'];
+    $heights = $_POST['height'];
+    $weights = $_POST['weight'];
+    $contactNos = $_POST['contactNo'];
+    $religions = $_POST['religion'];
+    $emailAdds = $_POST['emailAdd'];
+    $pwds = $_POST['pwd'];
+
+
+    for ($i = 0; $i < count($firstNames); $i++) {
+        $lname = $lastNames[$i];
+        $fname = $firstNames[$i];
+        $mname = $middleNames[$i];
+        $age = $ages[$i];
+        $kin = $kinships[$i];
+        $sex = $sexs[$i];
+        $civil = $civilStats[$i];
+        $dob = $dateOfBirths[$i];
+        $pob = $placeOfBirths[$i];
+        $h = $heights[$i];
+        $w = $weights[$i];
+        $contact = $contactNos[$i];
+        $rel = $religions[$i];
+        $email = $emailAdds[$i];
+        $pwd = $pwds[$i];
+
+        $sql = "INSERT INTO resident (lname, fname, mname, age, kinship, sex, civilStatus, dateOfBirth, placeOfBirth, height, weights, contact, religion, email, pwd) VALUES ('$lname', '$fname', '$mname', '$age', '$kin', '$sex', '$civil', '$dob', '$pob', '$h', '$w', '$contact', '$rel', '$email', '$pwd')";
+
+        if ($conn->query($sql) === TRUE) {
+            echo "New record created successfully for Family Member $i<br>";
+        } else {
+            echo "Error: " . $sql . "<br><br><br>" . $conn->error;
+        }
+    }
+}
+
+$conn->close();
+?>
