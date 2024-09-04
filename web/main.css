@@ -91,19 +91,21 @@ main {
     }
     
     #map {
-        height: 300px;
+        height: 250px;
 		width: 100vw;
     }
 
     .sidebar.active~#map .leaflet-control {
         display: none;
     }
+
 }
 
 #map {
     height: 400px;
     margin-top: 10px;
     width: 100%;
+    
 }
 
 .table-container {
@@ -131,4 +133,11 @@ table thead th {
 
 .button {
     width: 1000px;
+}
+
+
+.container{
+    background-color: aliceblue;
+    padding: 10px;
+    border-radius: 11px;
 }

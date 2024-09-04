@@ -20,7 +20,7 @@
               title: 'Login Successful',
               ConfirmButton: "OK",
             }).then(() => {
-              window.location.href = 'registerResident.php';
+              window.location.href = 'RESIDENTREGISTER.php';
             });
           }else if (response.trim() == "Admin Registration Successful") {  //ADMIN REGISTRATION PART
             Swal.fire({

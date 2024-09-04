@@ -1,24 +1,25 @@
 <!--HELLO -->
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <title>Register Resident</title>
-        <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-        <link rel="stylesheet" href="main.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    </head>
+<html lang="en">
 
-    <body>
-        <?php include 'include/sidebar.php';?>
-        <main>
+<head>
+    <title>Register Resident</title>
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+</head>
+
+<body>
+    <?php include 'include/sidebar.php'; ?>
+    <main>
         <div>
             <h1>Family Registration Form</h1>
             <button onclick="addForm()">Add Family Member</button>
@@ -26,14 +27,15 @@
                 <button type="submit" form="familyForm" name="submit">Submit All</button>
             </form>
         </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    let formCount = 0;
-    function addForm() {
-        formCount++;
-        const formContainer = document.createElement('div');
-        formContainer.className = 'form-container';
-        formContainer.innerHTML = `
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let formCount = 0;
+
+                function addForm() {
+                    formCount++;
+                    const formContainer = document.createElement('div');
+                    formContainer.className = 'form-container';
+                    formContainer.innerHTML = `
             <div class="container" style="background-color: aliceblue; border-radius: 5px; padding: 12px; margin: auto;">
                 <h2 style="text-align: left;">REGISTRATION FORM</h2><br>
                 <h3>Family Member ${formCount}</h3>
@@ -131,23 +133,30 @@
                 </div>
             </div><br>
         `;
-        const familyForm = document.getElementById('familyForm');
-        if (familyForm) {
-            familyForm.appendChild(formContainer);
-        } else {
-            console.error('Family form container not found!');
-        }
-    }
+                    const familyForm = document.getElementById('familyForm');
+                    if (familyForm) {
+                        familyForm.appendChild(formContainer);
+                    } else {
+                        console.error('Family form container not found!');
+                    }
+                }
 
-    // Attach event listener
-    document.querySelector('button[onclick="addForm()"]').addEventListener('click', addForm);
-});
-</script>
-        </main>
+                // Attach event listener
+                document.querySelector('button[onclick="addForm()"]').addEventListener('click', addForm);
+            });
+        </script><br>
+        <div class="container">
+            <label for="presentAdd"><b>Enter Present Address:</b></label>
+            <input type="text" class="form-control" placeholder="Address" id="presentAdd" name="presentAdd" required readonly>
+            <div id="map"></div>
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+        </div>
+    </main>
 
-        <script src="script.js"></script>
-        <br>
+    <script src="script.js"></script>
+    <br>
 
-    </body>
+</body>
 
-    </html>
+</html>

@@ -1,7 +1,7 @@
 <?php
 require 'adminFunction.php';
 if (isset($_SESSION["adminID"])) {
-  header("Location: registerResident.php");
+  header("Location: RESIDENTREGISTER.php");
 }
 ?>
 <!DOCTYPE html>
