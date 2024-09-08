@@ -36,10 +36,12 @@
             });
 
             if (isFormIncomplete) {
-                $("#formIncompleteNotification").css("display", "block");
-                setTimeout(function() {
-                    $("#formIncompleteNotification").css("display", "none");
-                }, 3000);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Form Incomplete',
+                    text: 'Please fill up the form completely!',
+                    confirmButtonText: 'OK',
+                });
                 return;
             }
 
@@ -49,13 +51,21 @@
                 data: data,
                 success: function(response) {
                     if (response.trim() == "Resident Added Successfully!") {
-                        $("#notification").text(response).css("display", "block");
-                        setTimeout(function() {
-                            $("#notification").css("display", "none");
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response,
+                            confirmButtonText: 'OK',
+                        }).then(function() {
                             window.location.reload();
-                        }, 3000);
+                        });
                     } else {
-                        alert(response);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            confirmButtonText: 'OK',
+
+                        });
                     }
                 }
             });

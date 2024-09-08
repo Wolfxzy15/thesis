@@ -58,32 +58,3 @@ function register(){
 
 
 
-// LOGIN ADMIN
-function login(){
-  global $conn;
-
-  $username = $_POST["username"];
-  $password = $_POST["password"];
-
-  $user = mysqli_query($conn, "SELECT * FROM tbl_admin WHERE username = '$username'");
-
-  if(mysqli_num_rows($user) > 0){
-
-    $row = mysqli_fetch_assoc($user);
-
-    if($password == $row['password']){
-      echo "Admin Login Successful";
-      $_SESSION["login"] = true;
-      $_SESSION["adminID"] = $row["adminID"];
-    }
-    else{
-      echo "Wrong Password";
-      exit;
-    }
-  }
-  else{
-    echo "Admin Not Registered";
-    exit;
-  }
-}
-?>

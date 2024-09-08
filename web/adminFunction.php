@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include 'include/db.php';
+include 'dbTest.php';
 
 // IF
 if(isset($_POST["action"])){

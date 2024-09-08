@@ -1,9 +1,3 @@
-<?php
-require 'adminFunction.php';
-if (isset($_SESSION["adminID"])) {
-  header("Location: RESIDENTREGISTER.php");
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,18 +11,41 @@ if (isset($_SESSION["adminID"])) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    <link rel="stylesheet" href="main.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
   <style>
+    body{
+      background-color: #7C93C3;
+    }
     .center-image {
       display: flex;
       justify-content: center;
+    }
+    .navbar{
+      background-color:#1E2A5E;
+    }
+    .navbar a{
+      color: aliceblue;
+      font-size: 25px;
+    }
+    .navbar li{
+      font-size: 15px;
     }
   </style>
 </head>
 
 <body>
+<nav class="navbar">
+  <a class="navbar-brand" href="#">
+    <img src="images/citylogo.png" width="40" height="40" class="d-inline-block align-top" alt="">
+    Barangay
+  </a>
+  <ul class="navbar-nav mr-auto">
+      <li class="nav-item active pl-4">
+        <a class="nav-link" href="RESIDENTREGISTER.php">Register Here<span class="sr-only">(current)</span></a>
+      </li>
+    </ul>
+</nav>
   <div class="container mt-5 pt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
@@ -70,3 +87,4 @@ if (isset($_SESSION["adminID"])) {
 </body>
 
 </html>
+

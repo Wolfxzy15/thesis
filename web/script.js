@@ -1,13 +1,3 @@
-//SIDEBAR NI
-document.getElementById('menu-toggle').addEventListener('click', function () {
-    var sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('active');
-    var mapControls = document.querySelectorAll('#map .leaflet-control');
-    mapControls.forEach(control => {
-        control.style.display = sidebar.classList.contains('active') ? 'none' : 'block';
-    });
-});
-
 //MAP FUNCTION
 var map = L.map('map').setView([10.7332, 122.5585], 16); //Tabuc Suba coordinates
 

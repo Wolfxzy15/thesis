@@ -21,16 +21,32 @@
                 width="40" height="40" class="d-inline-block align-center" alt="">
         </a>
         <h1 style="margin-left: 0;">Barangay</h1>
+        <a class="nav-link ml-auto" style="color:aliceblue" href="logout.php"><i class="fa-solid fa-sign-out pr-2"></i>Logout <span class="sr-only">(current)</span></a>
     </header>
 
     <aside class="sidebar" id="sidebar">
         <nav>
             <ul><br>
                 <li><a class="nav-link" href="RESIDENTREGISTER.php"><i class="fa-solid fa-user-plus pr-2"></i></i>Add Residents <span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i></i>Edit Residents <span class="sr-only">(current)</span></a></li><br>
-                <li class="logout"><a class="nav-link" href="logout.php"><i class="fa-solid fa-sign-out pr-2"></i>Logout <span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="displayFamilies.php"><i class="fa-solid fa-people-roof pr-2"></i>Families<span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i></i>Edit Residents<span class="sr-only">(current)</span></a></li><br><br><br><br><br><br>
+               
+                
             </ul>
         </nav>
     </aside>
   </body>
+  <script>
+    document.getElementById('menu-toggle').addEventListener('click', function () {
+    var sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('active');
+    //Map
+    var mapControls = document.querySelectorAll('#map .leaflet-control');
+    mapControls.forEach(control => {
+        control.style.display = sidebar.classList.contains('active') ? 'none' : 'block';
+    });
+});
+
+  </script>
+  
 </html>
