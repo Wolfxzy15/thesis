@@ -29,7 +29,9 @@
             <ul><br>
                 <li><a class="nav-link" href="RESIDENTREGISTER.php"><i class="fa-solid fa-user-plus pr-2"></i></i>Add Residents <span class="sr-only">(current)</span></a></li>
                 <li><a class="nav-link" href="displayFamilies.php"><i class="fa-solid fa-people-roof pr-2"></i>Families<span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i></i>Edit Residents<span class="sr-only">(current)</span></a></li><br><br><br><br><br><br>
+                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i></i>Edit Residents<span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="evacSite.php"><i class="fa-solid fa-edit pr-2"></i></i>Evacuation Centers<span class="sr-only">(current)</span></a></li>
+                <br><br><br><br><br><br>
                
                 
             </ul>

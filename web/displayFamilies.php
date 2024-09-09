@@ -45,7 +45,7 @@
                         </thead>
                         <tbody>
                             <?php
-                            include 'dbTest.php';
+                            include 'db.php';
 
                             $search_query = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
                             $sort_column = isset($_GET['sort']) ? mysqli_real_escape_string($conn, $_GET['sort']) : '';
