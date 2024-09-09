@@ -21,7 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $longitude = $conn->real_escape_string($_POST['longitude']);
 
     
-    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude) VALUES ('$presentAddress', '$latitude', '$longitude')";
+    $num_members = count($_POST['lastName']);
+    $num_pwd = 0;
+
+
+    for ($i = 0; $i < count($_POST['lastName']); $i++) {
+        if ($_POST['pwd' . ($i + 1)] == 'YES') {
+            $num_pwd++;
+        }
+    }
+
+    
+    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 1)";
     if ($conn->query($sql_family) === TRUE) {
         $family_id = $conn->insert_id; 
     } else {

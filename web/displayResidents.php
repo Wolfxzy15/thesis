@@ -18,7 +18,7 @@
 </head>
 <body>
 
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'sidebar.php'; ?>
     <main>
         <div class="table-container">
             <form class="form-inline mx-auto" method="GET" action="">

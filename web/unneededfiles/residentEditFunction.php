@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'include/db.php';
+include 'db.php';
 
 // IF
 if(isset($_POST["update"])){

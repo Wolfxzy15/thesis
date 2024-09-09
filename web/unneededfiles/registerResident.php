@@ -59,7 +59,7 @@ if (isset($_SESSION["residentID"])) {
 <body style="background-image: url('https://dynamic-media-cdn.tripadvisor.com/media/photo-o/06/e0/4c/2d/iloilo-city-hall.jpg?w=1200&h=-1&s=1');
   background-repeat: no-repeat;
   background-size: cover;">
-    <?php include 'include/nav.php'; ?>
+    <?php include 'nav.php'; ?>
     <div id="notification">Registration Successful</div>
     <div id="formIncompleteNotification">Please fill up the form completely</div>
 

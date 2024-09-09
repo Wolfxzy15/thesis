@@ -40,7 +40,9 @@
                                 <th scope="col">Present Address</th>
                                 <th scope="col">Number of Members</th>
                                 <th scope="col">Number of PWD</th>
+                                <th scope="col">Evacuation Center</th>
                                 <th scope="col">VIEW</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -56,15 +58,17 @@
                                     f.family_id,
                                     f.presentAddress,
                                     COUNT(r.residentID) AS num_members,
-                                    SUM(CASE WHEN r.PWD = 'YES' THEN 1 ELSE 0 END) AS num_pwd
+                                    SUM(CASE WHEN r.PWD = 'YES' THEN 1 ELSE 0 END) AS num_pwd,
+                                    e.evacID
                                 FROM tbl_families f
                                 LEFT JOIN tbl_residents r ON f.family_id = r.family_id
+                                LEFT JOIN tbl_evac e ON f.evacID = e.evacID
                                 WHERE 
                                     f.family_id = '$search_query'
                                     OR f.presentAddress LIKE '%$search_query%' 
                                     OR r.lastName LIKE '%$search_query%' 
                                     OR r.firstName LIKE '%$search_query%'
-                                GROUP BY f.family_id
+                                GROUP BY f.family_id, e.evacID;
                             
                             ";
 
@@ -85,13 +89,22 @@
                                     $presentAddress = $row['presentAddress'];
                                     $num_members = $row['num_members'];
                                     $num_pwd = $row['num_pwd'];
+                                    $evacID = $row['evacID'];
 
+                                    $evacStatus = "";
+                                    if ($evacID == 1){
+                                        $evacStatus = "Unregistered";
+                                    }
+                                    if ($evacID == 2){
+                                        $evacStatus = "Evacuation Center 1";
+                                    }
                                     echo '<tr>
                                         <th scope="row">' . $family_id . '</th>
                                         
                                         <td>' . $presentAddress. '</td>
                                         <td>' . $num_members . '</td>
                                         <td>' . $num_pwd . '</td>
+                                        <td>' . $evacStatus .'</td>
                                         <td>
                                             <button class="btn btn-success">
                                                 <a href="displayResidents.php?family_id=' . urlencode($family_id) . '" class="text-light">VIEW</a>
