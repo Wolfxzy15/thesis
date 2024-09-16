@@ -2,8 +2,7 @@
         // Default coordinates (central map position)
         var defaultLat = 0;
         var defaultLong = 0;
-        var evac1_distance = 0, evac2_distance = 0, evac3_distance = 0;
-
+        var evac1_distance = 0, evac2_distance = 0, evac3_distance = 0, evac4_distance = 0;
 
         // Latitude and longitude passed from PHP (POST request)
         var x = <?php echo json_encode($lat); ?> || defaultLat;
@@ -31,18 +30,15 @@
         var markers = [
             {coords: [10.730668, 122.560212], name: 'Marker 1'},
             {coords: [10.733978, 122.557465], name: 'Marker 2'},
-            {coords: [10.733936, 122.561885], name: 'Marker 3'}
+            {coords: [10.733936, 122.561885], name: 'Marker 3'},
+            // New evacuation center 4 coordinates
+            {coords: [10.732251863393, 122.55615529758], name: 'Marker 4'}
         ];
 
         markers.forEach(function(markerData) {
             var marker = L.marker(markerData.coords).addTo(map);
-            marker.bindPopup(markerData.name).openPopup();
-        });
-
-        markers.forEach(function(markerData) {
-            var marker = L.marker(markerData.coords).addTo(map);
-            var distance = redMarker.getLatLng().distanceTo(marker.getLatLng());
-            marker.bindPopup('Distance to ' + markerData.name + ': ' + distance.toFixed(2) + ' meters').openPopup();
+            var distance = redMarker ? redMarker.getLatLng().distanceTo(marker.getLatLng()) : 0;
+            marker.bindPopup('Distance to ' + markerData.name + ': ' + distance.toFixed(2) + ' meters<br>Coordinates: ' + markerData.coords).openPopup();
 
             if (markerData.name === 'Marker 1') {
                 evac1_distance = parseFloat(distance.toFixed(2));
@@ -50,13 +46,16 @@
                 evac2_distance = parseFloat(distance.toFixed(2));
             } else if (markerData.name === 'Marker 3') {
                 evac3_distance = parseFloat(distance.toFixed(2));
+            } else if (markerData.name === 'Marker 4') {
+                evac4_distance = parseFloat(distance.toFixed(2));
             }
         });
 
-        var minDistance = Math.min(evac1_distance, evac2_distance, evac3_distance);
+        var minDistance = Math.min(evac1_distance, evac2_distance, evac3_distance, evac4_distance);
         document.getElementById('mindistance').textContent = 'The nearest evacuation center is ' + minDistance + ' meters away';
         document.getElementById('evac1').value = evac1_distance;
         document.getElementById('evac2').value = evac2_distance;
         document.getElementById('evac3').value = evac3_distance;
+        document.getElementById('evac4').value = evac4_distance;
 
     </script>

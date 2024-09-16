@@ -21,12 +21,15 @@
     <main>
         <div class="table-container">
             <form class="form-inline mx-auto" method="GET" action="">
-                <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search" aria-label="Search">
+                <label><span style="color:black; font-size: 20px">Search Family ID#</span> </label>
+                <input class="form-control mr-sm-2 ml-2" type="search" name="search" placeholder="Search" aria-label="Search">
                 <button class="btn btn-light mr-sm-2" type="submit" style="background-color: #E1D7B7; color: black;">Search</button>
                 <select name="sort" class="form-control mr-sm-2">
                     <option value="">Sort By</option>
                     <option value="family_members">Number of Family Members</option>
                     <option value="pwd_status">PWD Status</option>
+                    <option value="unregistered">Unregistered Families</option>
+                    <option value="evacuated">Evacuated Families</option>
                 </select>
                 <button class="btn btn-light" type="submit" style="background-color: #E1D7B7; color: black;">Sort</button>
             </form>
@@ -36,13 +39,14 @@
                     <table class="table table-hover table-bordered table-light">
                         <thead>
                             <tr>
-                                <th scope="col">Family ID#</th> 
+                                <th scope="col">Family ID#</th>
                                 <th scope="col">Present Address</th>
                                 <th scope="col">Number of Members</th>
                                 <th scope="col">Number of PWD</th>
-                                <th scope="col">Evacuation Center</th>
-                                <th scope="col">VIEW</th>
-                                
+                                <th scope="col">Evacuation Center #</th>
+                                <th scope="col">STATUS</th>
+                                <th scope="col">View Family</th>
+                                <th scope="col">REGISTER</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -51,26 +55,26 @@
 
                             $search_query = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
                             $sort_column = isset($_GET['sort']) ? mysqli_real_escape_string($conn, $_GET['sort']) : '';
-                            $sort_order = 'DESC'; 
-                            
+                            $sort_order = 'DESC';
+
                             $sql = "
-                               SELECT 
-                                    f.family_id,
-                                    f.presentAddress,
-                                    COUNT(r.residentID) AS num_members,
-                                    SUM(CASE WHEN r.PWD = 'YES' THEN 1 ELSE 0 END) AS num_pwd,
-                                    e.evacID
-                                FROM tbl_families f
-                                LEFT JOIN tbl_residents r ON f.family_id = r.family_id
-                                LEFT JOIN tbl_evac e ON f.evacID = e.evacID
-                                WHERE 
-                                    f.family_id = '$search_query'
-                                    OR f.presentAddress LIKE '%$search_query%' 
-                                    OR r.lastName LIKE '%$search_query%' 
-                                    OR r.firstName LIKE '%$search_query%'
-                                GROUP BY f.family_id, e.evacID;
-                            
-                            ";
+                                SELECT 
+                                     f.family_id,
+                                        f.presentAddress,
+                                        f.latitude,
+                                        f.longitude,
+                                        COUNT(r.residentID) AS num_members,
+                                        SUM(CASE WHEN r.PWD = 'YES' THEN 1 ELSE 0 END) AS num_pwd,
+                                        f.evacID
+                                    FROM tbl_families f
+                                    LEFT JOIN tbl_residents r ON f.family_id = r.family_id
+                                    WHERE 
+                                        f.family_id LIKE '%$search_query%'
+                                        OR f.presentAddress LIKE '%$search_query%' 
+                                        OR r.lastName LIKE '%$search_query%' 
+                                        OR r.firstName LIKE '%$search_query%'
+                                    GROUP BY f.family_id
+                                ";
 
                             // Add sorting to SQL query
                             if ($sort_column) {
@@ -78,7 +82,13 @@
                                     $sql .= " ORDER BY num_members $sort_order";
                                 } elseif ($sort_column == 'pwd_status') {
                                     $sql .= " ORDER BY num_pwd $sort_order";
+                                } elseif ($sort_column == 'unregistered') {
+                                    // Sort by families who are not evacuated (evacID is NULL or 0) using CASE statement
+                                    $sql .= " ORDER BY (CASE WHEN f.evacID IS NULL OR f.evacID = 0 THEN 1 ELSE 0 END) DESC, num_members $sort_order";
                                 }
+                                } elseif ($sort_column == 'evacuated') {
+                                    // Sort by families who are not evacuated (evacID is NULL or 0) using CASE statement
+                                    $sql .= " ORDER BY (CASE WHEN f.evacID > 0 THEN 1 ELSE 0 END) DESC, num_members $sort_order";
                             }
 
                             $result = mysqli_query($conn, $sql);
@@ -89,31 +99,38 @@
                                     $presentAddress = $row['presentAddress'];
                                     $num_members = $row['num_members'];
                                     $num_pwd = $row['num_pwd'];
+                                    $latitude = $row['latitude'];
+                                    $longitude = $row['longitude'];
                                     $evacID = $row['evacID'];
 
-                                    $evacStatus = "";
-                                    if ($evacID == 1){
-                                        $evacStatus = "Unregistered";
-                                    }
-                                    if ($evacID == 2){
-                                        $evacStatus = "Evacuation Center 1";
-                                    }
+                                    // Check if family is registered
+                                    $evacStatus = $evacID && $evacID != 0 ? "<span style='color: green;'>Evacuated</span>" : "<span style='color: red;'>Not Evacuated</span>";
+
                                     echo '<tr>
                                         <th scope="row">' . $family_id . '</th>
-                                        
-                                        <td>' . $presentAddress. '</td>
+                                        <td>' . $presentAddress . '</td>
                                         <td>' . $num_members . '</td>
                                         <td>' . $num_pwd . '</td>
-                                        <td>' . $evacStatus .'</td>
+                                        <td>' . $evacID . '</td>
+                                        <td>' . $evacStatus . '</td>
                                         <td>
                                             <button class="btn btn-success">
-                                                <a href="displayResidents.php?family_id=' . urlencode($family_id) . '" class="text-light">VIEW</a>
+                                                <a href="displayResidents.php?family_id=' . $family_id . '" class="text-light">VIEW</a>
                                             </button>
+                                        </td>
+                                        <td>
+                                            <!-- Register button for nearest evac center -->
+                                            <form action="evacSite.php" method="GET">
+                                                <input type="hidden" name="family_id" value="' . $family_id . '">
+                                                <input type="hidden" name="latitude" value="' . $latitude . '">
+                                                <input type="hidden" name="longitude" value="' . $longitude . '">
+                                                <button class="btn btn-primary" type="submit">Register</button>
+                                            </form>
                                         </td>
                                     </tr>';
                                 }
                             } else {
-                                echo "<tr><td colspan='5' class='text-center'>No records found</td></tr>";
+                                echo "<tr><td colspan='7' class='text-center'>No records found</td></tr>";
                             }
                             ?>
                         </tbody>
@@ -121,7 +138,6 @@
                 </form>
             </div>
         </div>
-
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

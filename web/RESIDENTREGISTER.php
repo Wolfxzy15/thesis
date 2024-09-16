@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     }
 
     
-    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 1)";
+    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 0)";
     if ($conn->query($sql_family) === TRUE) {
         $family_id = $conn->insert_id; 
     } else {

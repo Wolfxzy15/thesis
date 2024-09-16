@@ -1,218 +1,165 @@
-<?php include 'include/sidebar.php'; 
-    session_start();
+<?php
+include 'db.php'; // Connect to the database
+
+// Function to calculate distance using Haversine Formula
+function haversine($lat1, $lon1, $lat2, $lon2) {
+    $earth_radius = 6371; // Earth radius in kilometers
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+    $a = sin($dLat/2) * sin($dLat/2) +
+        cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+        sin($dLon/2) * sin($dLon/2);
+    $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+    return $earth_radius * $c; // Distance in kilometers
+}
+
+// Check if the family data is received
+if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longitude'])) {
+    $familyID = $_GET['family_id'];
+    $familyLat = $_GET['latitude'];
+    $familyLong = $_GET['longitude'];
+
+    // Query evacuation centers
+    $sql = "SELECT evacID, evacName, latitude, longitude, max_capacity, current_capacity FROM tbl_evac_centers";
+    $evacCenters = mysqli_query($conn, $sql);
+    
+    $evacData = []; // Store evacuation centers data
+    $nearestEvac = null; // Track the nearest evacuation center
+    $minDistance = PHP_FLOAT_MAX; // Initialize the minimum distance to a very large number
+
+    while ($row = mysqli_fetch_assoc($evacCenters)) {
+        $evacLat = $row['latitude'];
+        $evacLong = $row['longitude'];
+        $distance = haversine($familyLat, $familyLong, $evacLat, $evacLong);
+
+        // Store evacuation data with calculated distance
+        $evacData[] = array_merge($row, ['distance' => $distance]);
+
+        // Find the nearest evacuation center that is not full
+        if ($distance < $minDistance && $row['current_capacity'] < $row['max_capacity']) {
+            $minDistance = $distance;
+            $nearestEvac = $row;
+        }
+    }
+
+    // Check if the nearest evacuation center is full
+    if (!$nearestEvac) {
+        $evacData = array_filter($evacData, function($evac) {
+            return $evac['current_capacity'] < $evac['max_capacity'];
+        });
+
+        usort($evacData, function($a, $b) {
+            return $a['distance'] <=> $b['distance'];
+        });
+
+        $nearestEvac = $evacData[0] ?? null;
+    }
+
+    if (isset($_POST['register']) && isset($_POST['evac_id'])) {
+        $evacID = $_POST['evac_id'];
+
+        
+        $update_sql = "UPDATE tbl_families SET evacID = '$evacID', evacStatus = 'EVACUATED' WHERE family_id = '$familyID'";
+        if (mysqli_query($conn, $update_sql)) {
+            
+            $update_evac_sql = "UPDATE tbl_evac_centers SET current_capacity = current_capacity + 1 WHERE evacID = '$evacID'";
+            mysqli_query($conn, $update_evac_sql);
+            
+            $success = true; 
+        } else {
+            echo "Error registering the family: " . mysqli_error($conn);
+            $success = false; 
+        }
+    }
+} else {
+    echo "Family data not provided.";
+    exit;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evacuation Center</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <style>
-        #map {border: aliceblue solid; width: 1000px; height: 300px; margin-top: 100px; display: grid;}
-
-        body {
-            justify-content: center;
-            display: grid;
-        }
-
-        #inputbox {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 1000px;
-            margin: 10px 0;
-        }
-
-        input.readonly-input {
-            width: 32%;
-            margin: 0;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            /* display: none; */
-        }
-
-        #unreg{
-            width: 100%;
-            position: relative;
-            background-color: #55679C;
-            font-family: Arial, Helvetica, sans-serif;
-            margin-top: 30px;
-            justify-content: center;
-            border-radius: 5px;
-        }
-
-        p {
-            color: white;
-        }
-
-    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0JLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <div id='map'></div>
-    <form action="" method="post">
-    <div id="inputbox">
-        
-        <input type="text" id="evac1" name="evac1" class="readonly-input" readonly placeholder="Evacuation Center 1 distance">
-        <input type="text" id="evac2" name="evac2" class="readonly-input" readonly placeholder="Evacuation Center 2 distance">
-        <input type="text" id="evac3" name="evac3" class="readonly-input" readonly placeholder="Evacuation Center 3 distance">
-        
-    </div>
-    <button type="submit" class="btn btn-primary" name="register" style="justify-content: center;">Register</button>
-    </form>
-    <div id="text">
-        <p id="mindistance"></p>
-    </div>
+<?php include 'include/sidebar.php'; ?>
+<main>
+<div class="container1">
 
-    <div id="unreg">
-        <p>Unregistered</p>
-    </div>
+<h2>Evacuation Site Family Registration</h2>
 
-    <table class="table table-hover table-bordered table-light">
-        <thead>
-            <tr>
-                <th scope="col">Family ID#</th> 
-                <th scope="col">Number of Members</th>
-                <th scope="col">Number of PWD</th>
-                <th scope="col">View Location</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-                include 'db.php';
+<!-- Show the nearest evacuation center and distance -->
+<p>Nearest Evacuation Center: <strong><?= $nearestEvac['evacName']; ?></strong></p>
+<p>Distance: <strong><?= round($minDistance, 2); ?> km</strong></p>
 
-                if ($_SERVER["REQUEST_METHOD"] == "POST"){
-                    if (isset($_POST['view'])){
-                        $lat = $_POST['latitude'];
-                        $long = $_POST['longitude'];
-                        $famID = $_POST['familyid'];
-                        $_SESSION['famID'] = $famID;
-                    }
-                    
+<div id='map' style="height: 600px;"></div>
+<br>
+<form method="POST">
+    <input type="hidden" name="family_id" value="<?= $familyID; ?>">
+    <select name="evac_id" id="evacSelect" required>
+        <option value="<?= $nearestEvac['evacID']; ?>">Nearest Evacuation Center (<?= round($minDistance, 2); ?> km)</option>
+        <?php foreach ($evacData as $evac) { ?>
+            <option value="<?= $evac['evacID']; ?>"><?= $evac['evacName']; ?> (<?= round($evac['distance'], 2); ?> km)</option>
+        <?php } ?>
+    </select>
+    <button type="submit" name="register">Register</button>
+</form>
+</div>
 
-                } 
+<script>
+// Family and evacuation center coordinates from PHP
+var familyLat = <?= $familyLat; ?>;
+var familyLong = <?= $familyLong; ?>;
+var evacCenters = <?= json_encode($evacData); ?>;
+var familyID = <?= json_encode($familyID); ?>;
+var success = <?= isset($success) && $success ? 'true' : 'false'; ?>;
 
-                
-                $sql = "SELECT * FROM tbl_families WHERE evacID = 1";
-                $result = mysqli_query($conn, $sql);
+// Initialize map centered at the family's location
+var map = L.map('map').setView([familyLat, familyLong], 18);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-                if ($result) {
-                    while ($row = mysqli_fetch_assoc($result)){
-                        $family_id = $row['family_id'];
-                        $num_members = $row['num_members'];
-                        $num_pwd = $row['num_pwd'];
-                        $latitude = $row['latitude'];
-                        $longitude = $row['longitude'];
+// Add family location marker
+L.marker([familyLat, familyLong]).addTo(map)
+    .bindPopup("Family: " + familyID + " Location")
+    .openPopup();
 
-                        echo '<tr>
-                            <form method="POST">
-                                <input type="hidden" name="latitude" value="' . $latitude .'">
-                                <input type="hidden" name="longitude" value="' . $longitude . '">
-                                <input type="hidden" name="familyid" value="' . $family_id . '">
-                                <th scope="row">'. $family_id .'</th>
-                                <td>'.$num_members.'</td>
-                                <td>'.$num_pwd.'</td>
-                                <td><button type="submit" class="btn btn-success" name="view">View</button></td>
-                            </form></tr>';
-                    }
-                }
+// Add evacuation centers to the map
+evacCenters.forEach(function(evac) {
+    var evacLat = evac.latitude;
+    var evacLong = evac.longitude;
+    var evacName = evac.evacName;
 
-            ?>
-        </tbody>
-    </table>
-    <?php include 'mapFunction.php'; 
-    include 'tables.php';
-    ?>
-    
+    var evacIcon = L.icon({iconUrl: "images/building-solid.svg", iconSize:[32,32]});
+    L.marker([evacLat, evacLong], {icon: evacIcon}).addTo(map)
+        .bindTooltip(evacName)
+        .openTooltip();
+});
+
+// Show SweetAlert on successful registration
+if (success) {
+    Swal.fire({
+        title: 'Success!',
+        text: 'Family has been successfully registered in the evacuation center.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+    }).then(() => {
+              window.location.href = 'displayFamilies.php';
+    });
+}
+</script>
+
+</main>
 </body>
 </html>
-<?php
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
-    include 'db.php'; // Ensure the database connection is included
-
-    // Retrieve familyID from session
-    $familyID = isset($_SESSION['famID']) ? intval($_SESSION['famID']) : null;
-    echo $familyID;
-
-    if ($familyID) {
-        // Retrieve and sanitize evacuation distances
-        $evacuation1 = isset($_POST['evac1']) ? (int)$_POST['evac1'] : 0;
-        $evacuation2 = isset($_POST['evac2']) ? (int)$_POST['evac2'] : 0;
-        $evacuation3 = isset($_POST['evac3']) ? (int)$_POST['evac3'] : 0;
-
-        // Find the minimum evacuation distance
-        $nevacuation = array($evacuation1, $evacuation2, $evacuation3);
-        sort($nevacuation);
-            
-        include 'count.php';
-
-        // Update database if the minimum distance matches
-if ($nevacuation[0] == $evacuation1) {
-    if ($countc1['count1'] < 5) { // Note the use of '==' for comparison
-        $sql = "UPDATE tbl_families SET evacID = 2 WHERE family_id = $familyID";
-        $result = mysqli_query($conn, $sql);
-    } else if ($nevacuation[1] == $evacuation2) {
-        if ($countc2['count2'] < 5) { // Note the use of '==' for comparison
-            $sql = "UPDATE tbl_families SET evacID = 3 WHERE family_id = $familyID";
-            $result = mysqli_query($conn, $sql);
-        } else if ($nevacuation[2] == $evacuation3) {
-            if ($countc3['count3'] < 5) {
-                $sql = "UPDATE tbl_families SET evacID = 4 WHERE family_id = $familyID";
-                $result = mysqli_query($conn, $sql);
-            }
-        }
-    }
-} else if ($nevacuation[0] == $evacuation2) {
-    if ($countc2['count2'] < 5) { // Note the use of '==' for comparison
-        $sql = "UPDATE tbl_families SET evacID = 3 WHERE family_id = $familyID";
-        $result = mysqli_query($conn, $sql);
-    } else if ($nevacuation[1] == $evacuation1) {
-        if ($countc1['count1'] < 5) { // Note the use of '==' for comparison
-            $sql = "UPDATE tbl_families SET evacID = 2 WHERE family_id = $familyID";
-            $result = mysqli_query($conn, $sql);
-        } else if ($nevacuation[2] == $evacuation3) {
-            if ($countc3['count3'] < 5) {
-                $sql = "UPDATE tbl_families SET evacID = 4 WHERE family_id = $familyID";
-                $result = mysqli_query($conn, $sql);
-            }
-        }
-    } else if ($nevacuation[1] == $evacuation3) {
-        if ($countc3['count3'] < 5) {
-            $sql = "UPDATE tbl_families SET evacID = 4 WHERE family_id = $familyID";
-            $result = mysqli_query($conn, $sql);
-        } else if ($nevacuation[2] == $evacuation1) {
-            if ($countc1['count1'] < 5) { // Note the use of '==' for comparison
-                $sql = "UPDATE tbl_families SET evacID = 2 WHERE family_id = $familyID";
-                $result = mysqli_query($conn, $sql);
-            }
-        }
-    }
-} else if ($nevacuation[0] == $evacuation3) {
-    if ($countc3['count3'] < 5) {
-        $sql = "UPDATE tbl_families SET evacID = 4 WHERE family_id = $familyID";
-        $result = mysqli_query($conn, $sql);
-    } else if ($nevacuation[1] == $evacuation1) {
-        if ($countc1['count1'] < 5) { // Note the use of '==' for comparison
-            $sql = "UPDATE tbl_families SET evacID = 2 WHERE family_id = $familyID";
-            $result = mysqli_query($conn, $sql);
-        } else if ($nevacuation[2] == $evacuation2) {
-            if ($countc2['count2'] < 5) { // Note the use of '==' for comparison
-                $sql = "UPDATE tbl_families SET evacID = 3 WHERE family_id = $familyID";
-                $result = mysqli_query($conn, $sql);
-            }
-        }
-    }
-} else {
-    echo "All evacuation centers are full";
-}
-
-
-    mysqli_close($conn); // Ensure the database connection is closed
-    }}
-?>
