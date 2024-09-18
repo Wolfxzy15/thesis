@@ -5,6 +5,15 @@ include 'db.php'; // Connect to the database
 $defaultLat = 10.7344;
 $defaultLong = 122.5580;
 
+$sql = "SELECT evac.evacID, evac.evacName, evac.max_capacity, evac.current_capacity, 
+        (evac.max_capacity <= evac.current_capacity) AS is_full, 
+        GROUP_CONCAT(fam.family_id) AS family_ids
+        FROM tbl_evac_centers evac
+        LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
+        GROUP BY evac.evacID";
+
+$result = mysqli_query($conn, $sql);
+
 // Query evacuation centers
 $sql = "SELECT evacID, evacName, latitude, longitude, max_capacity, current_capacity FROM tbl_evac_centers";
 $evacCenters = mysqli_query($conn, $sql);
@@ -21,6 +30,7 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Map Evacuation Center</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -40,8 +50,8 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
 <div id='map' style="height: 600px;"></div>
 </div>
 <br>
-<table class="table table-dark">
-    <thead class="thead-dark">
+<table class="table table-light">
+    <thead>
     <tr>
         <th scope="col">LEGEND</th>
         <th scope="col">Description</th>
@@ -54,9 +64,35 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
             </tr>
         </tbody>
 </table>
-
-
-
+<div class="container1">
+            <h2>Evacuation Site Status</h2>
+            <?php if ($result): ?>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Evacuation Center</th>
+                            <th>Max Capacity -Families</th>
+                            <th>Current Capacity -Families</th>
+                            <th>Status</th>
+                            <th>Assigned Families</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                            <tr>
+                                <td><?= $row['evacName']; ?></td>
+                                <td><?= $row['max_capacity']; ?></td>
+                                <td><?= $row['current_capacity']; ?></td>
+                                <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
+                                <td><?= $row['family_ids'] ? $row['family_ids'] : 'None'; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p>No evacuation centers found.</p>
+            <?php endif; ?>
+        </div>
 <script>
 // Default coordinates for the map (Brgy. Tabuc Suba)
 var defaultLat = <?= $defaultLat; ?>;

@@ -2,34 +2,54 @@
 include 'db.php'; // Connect to the database
 
 // Function to calculate distance using Haversine Formula
-function haversine($lat1, $lon1, $lat2, $lon2) {
+function haversine($lat1, $lon1, $lat2, $lon2)
+{
     $earth_radius = 6371; // Earth radius in kilometers
+
+    // Convert latitude and longitude from degrees to radians
+    $lat1 = (float) $lat1;
+    $lon1 = (float) $lon1;
+    $lat2 = (float) $lat2;
+    $lon2 = (float) $lon2;
+
     $dLat = deg2rad($lat2 - $lat1);
     $dLon = deg2rad($lon2 - $lon1);
-    $a = sin($dLat/2) * sin($dLat/2) +
+
+    $a = sin($dLat / 2) * sin($dLat / 2) +
         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-        sin($dLon/2) * sin($dLon/2);
-    $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        sin($dLon / 2) * sin($dLon / 2);
+
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
     return $earth_radius * $c; // Distance in kilometers
 }
+$sql = "SELECT evac.evacID, evac.evacName, evac.max_capacity, evac.current_capacity, 
+        (evac.max_capacity <= evac.current_capacity) AS is_full, 
+        GROUP_CONCAT(fam.family_id) AS family_ids
+        FROM tbl_evac_centers evac
+        LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
+        GROUP BY evac.evacID";
+
+$result = mysqli_query($conn, $sql);
+
 
 // Check if the family data is received
+
 if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longitude'])) {
     $familyID = $_GET['family_id'];
-    $familyLat = $_GET['latitude'];
-    $familyLong = $_GET['longitude'];
+    $familyLat = (float) $_GET['latitude'];
+    $familyLong = (float) $_GET['longitude'];
 
     // Query evacuation centers
     $sql = "SELECT evacID, evacName, latitude, longitude, max_capacity, current_capacity FROM tbl_evac_centers";
     $evacCenters = mysqli_query($conn, $sql);
-    
+
     $evacData = []; // Store evacuation centers data
     $nearestEvac = null; // Track the nearest evacuation center
     $minDistance = PHP_FLOAT_MAX; // Initialize the minimum distance to a very large number
 
     while ($row = mysqli_fetch_assoc($evacCenters)) {
-        $evacLat = $row['latitude'];
-        $evacLong = $row['longitude'];
+        $evacLat = (float) $row['latitude'];
+        $evacLong = (float) $row['longitude'];
         $distance = haversine($familyLat, $familyLong, $evacLat, $evacLong);
 
         // Store evacuation data with calculated distance
@@ -44,11 +64,11 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
 
     // Check if the nearest evacuation center is full
     if (!$nearestEvac) {
-        $evacData = array_filter($evacData, function($evac) {
+        $evacData = array_filter($evacData, function ($evac) {
             return $evac['current_capacity'] < $evac['max_capacity'];
         });
 
-        usort($evacData, function($a, $b) {
+        usort($evacData, function ($a, $b) {
             return $a['distance'] <=> $b['distance'];
         });
 
@@ -58,17 +78,16 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
     if (isset($_POST['register']) && isset($_POST['evac_id'])) {
         $evacID = $_POST['evac_id'];
 
-        
-        $update_sql = "UPDATE tbl_families SET evacID = '$evacID', evacStatus = 'EVACUATED' WHERE family_id = '$familyID'";
+        $update_sql = "UPDATE tbl_families SET evacID = '$evacID' WHERE family_id = '$familyID'";
         if (mysqli_query($conn, $update_sql)) {
-            
+
             $update_evac_sql = "UPDATE tbl_evac_centers SET current_capacity = current_capacity + 1 WHERE evacID = '$evacID'";
             mysqli_query($conn, $update_evac_sql);
-            
-            $success = true; 
+
+            $success = true;
         } else {
             echo "Error registering the family: " . mysqli_error($conn);
-            $success = false; 
+            $success = false;
         }
     }
 } else {
@@ -79,6 +98,7 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
@@ -93,73 +113,110 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
     <link rel="stylesheet" href="main.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
-<?php include 'include/sidebar.php'; ?>
-<main>
-<div class="container1">
+    <?php include 'include/sidebar.php'; ?>
+    <main>
+        <div class="container1">
 
-<h2>Evacuation Site Family Registration</h2>
+            <h2>Evacuation Site Family Registration</h2>
 
-<!-- Show the nearest evacuation center and distance -->
-<p>Nearest Evacuation Center: <strong><?= $nearestEvac['evacName']; ?></strong></p>
-<p>Distance: <strong><?= round($minDistance, 2); ?> km</strong></p>
+            <!-- Show the nearest evacuation center and distance -->
+            <p>Nearest Evacuation Center: <strong><?= $nearestEvac['evacName']; ?></strong></p>
+            <p>Distance: <strong><?= round($minDistance, 2); ?> km</strong></p>
 
-<div id='map' style="height: 600px;"></div>
-<br>
-<form method="POST">
-    <input type="hidden" name="family_id" value="<?= $familyID; ?>">
-    <select name="evac_id" id="evacSelect" required>
-        <option value="<?= $nearestEvac['evacID']; ?>">Nearest Evacuation Center (<?= round($minDistance, 2); ?> km)</option>
-        <?php foreach ($evacData as $evac) { ?>
-            <option value="<?= $evac['evacID']; ?>"><?= $evac['evacName']; ?> (<?= round($evac['distance'], 2); ?> km)</option>
-        <?php } ?>
-    </select>
-    <button type="submit" name="register">Register</button>
-</form>
-</div>
+            <div id='map'></div>
+            <br>
+            <form method="POST">
+                <input type="hidden" name="family_id" value="<?= $familyID; ?>">
+                <select name="evac_id" id="evacSelect" required>
+                    <option value="<?= $nearestEvac['evacID']; ?>">Nearest Evacuation Center (<?= round($minDistance, 2); ?> km)</option>
+                    <?php foreach ($evacData as $evac) { ?>
+                        <option value="<?= $evac['evacID']; ?>"><?= $evac['evacName']; ?> (<?= round($evac['distance'], 2); ?> km)</option>
+                    <?php } ?>
+                </select>
+                <button type="submit" name="register">Register</button>
+            </form>
+        </div><br>
+        <div class="container1">
+            <h2>Evacuation Site Status</h2>
 
-<script>
-// Family and evacuation center coordinates from PHP
-var familyLat = <?= $familyLat; ?>;
-var familyLong = <?= $familyLong; ?>;
-var evacCenters = <?= json_encode($evacData); ?>;
-var familyID = <?= json_encode($familyID); ?>;
-var success = <?= isset($success) && $success ? 'true' : 'false'; ?>;
+            <?php if ($result): ?>
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th>Evacuation Center</th>
+                            <th>Max Capacity -Families</th>
+                            <th>Current Capacity -Families</th>
+                            <th>Status</th>
+                            <th>Assigned Families</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                            <tr>
+                                <td><?= $row['evacName']; ?></td>
+                                <td><?= $row['max_capacity']; ?></td>
+                                <td><?= $row['current_capacity']; ?></td>
+                                <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
+                                <td><?= $row['family_ids'] ? $row['family_ids'] : 'None'; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p>No evacuation centers found.</p>
+            <?php endif; ?>
+        </div>
 
-// Initialize map centered at the family's location
-var map = L.map('map').setView([familyLat, familyLong], 18);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        <script>
+            // Family and evacuation center coordinates from PHP
+            var familyLat = <?= $familyLat; ?>;
+            var familyLong = <?= $familyLong; ?>;
+            var evacCenters = <?= json_encode($evacData); ?>;
+            var familyID = <?= json_encode($familyID); ?>;
+            var success = <?= isset($success) && $success ? 'true' : 'false'; ?>;
 
-// Add family location marker
-L.marker([familyLat, familyLong]).addTo(map)
-    .bindPopup("Family: " + familyID + " Location")
-    .openPopup();
+            // Initialize map centered at the family's location
+            var map = L.map('map').setView([familyLat, familyLong], 18);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// Add evacuation centers to the map
-evacCenters.forEach(function(evac) {
-    var evacLat = evac.latitude;
-    var evacLong = evac.longitude;
-    var evacName = evac.evacName;
+            // Add family location marker
+            L.marker([familyLat, familyLong]).addTo(map)
+                .bindPopup("Family: " + familyID + " Location")
+                .openPopup();
 
-    var evacIcon = L.icon({iconUrl: "images/building-solid.svg", iconSize:[32,32]});
-    L.marker([evacLat, evacLong], {icon: evacIcon}).addTo(map)
-        .bindTooltip(evacName)
-        .openTooltip();
-});
+            // Add evacuation centers to the map
+            evacCenters.forEach(function(evac) {
+                var evacLat = evac.latitude;
+                var evacLong = evac.longitude;
+                var evacName = evac.evacName;
 
-// Show SweetAlert on successful registration
-if (success) {
-    Swal.fire({
-        title: 'Success!',
-        text: 'Family has been successfully registered in the evacuation center.',
-        icon: 'success',
-        confirmButtonText: 'OK'
-    }).then(() => {
-              window.location.href = 'displayFamilies.php';
-    });
-}
-</script>
+                var evacIcon = L.icon({
+                    iconUrl: "images/building-solid.svg",
+                    iconSize: [32, 32]
+                });
+                L.marker([evacLat, evacLong], {
+                        icon: evacIcon
+                    }).addTo(map)
+                    .bindTooltip(evacName)
+                    .openTooltip();
+            });
 
-</main>
+            // Show SweetAlert on successful registration
+            if (success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Family has been successfully registered in the evacuation center.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'displayFamilies.php';
+                });
+            }
+        </script>
+
+    </main>
 </body>
+
 </html>

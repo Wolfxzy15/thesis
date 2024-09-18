@@ -21,7 +21,8 @@
     <main>
         <div class="table-container">
             <form class="form-inline mx-auto" method="GET" action="">
-                <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search" aria-label="Search">
+                <label><span style="color:black; font-size: 20px">Search Resident ID# </span> </label>
+                <input class="form-control mr-sm-2 ml-2" type="search" name="search" placeholder="Search" aria-label="Search">
                 <button class="btn btn-light mr-sm-2" type="submit" style="background-color: #E1D7B7; color: black;">Search</button>
                 <select name="sort" class="form-control mr-sm-2">
                     <option value="">Sort By</option>
@@ -49,41 +50,51 @@
                         <tbody>
                             <?php
                             include 'db.php';
-                            $family_id = isset($_GET['family_id']) ? intval($_GET['family_id']) : 0;
 
+                            // Get family_id and search parameters
+                            $family_id = isset($_GET['family_id']) ? intval($_GET['family_id']) : 0;
                             $search_query = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
                             $sort_column = isset($_GET['sort']) ? mysqli_real_escape_string($conn, $_GET['sort']) : '';
                             $sort_order = 'ASC';
 
-                            $sql = "SELECT r.*, f.evacID 
-                                    FROM tbl_residents r 
-                                    LEFT JOIN tbl_families f ON r.family_id = f.family_id";
+                            // Build the base query
+                            $sql = "SELECT r.*, f.evacStatus 
+                                FROM tbl_residents r 
+                                LEFT JOIN tbl_families f ON r.family_id = f.family_id 
+                                WHERE 1"; // Always true, allowing further conditions to be appended
 
-                            if ($family_id > 0) {
-                                $sql .= " WHERE r.family_id = $family_id";
-                            } else if (is_numeric($search_query)) {
-                                $sql .= " WHERE r.family_id = '$search_query'";
-                            } else {
-                                $sql .= " WHERE 
-                                    r.residentID LIKE '%$search_query%' OR 
-                                    r.kinship LIKE '%$search_query%' OR 
-                                    r.lastName LIKE '%$search_query%' OR 
-                                    r.firstName LIKE '%$search_query%' OR 
-                                    r.age LIKE '%$search_query%' OR 
-                                    r.sex LIKE '%$search_query%' OR   
-                                    r.pwd LIKE '%$search_query%'";
+                            // If a specific family_id is provided, add it to the query
+                            if ($family_id) {
+                                $sql .= " AND r.family_id = '$family_id'";
                             }
+                            if (is_numeric($search_query)) {
+                                $sql .= " AND r.residentID = '$search_query'";
+                            }
+                            // If a search query is provided, add it to the query
+                            if (!empty($search_query)) {
+                                $sql .= " AND (r.residentID LIKE '%$search_query%' OR 
+                                        r.kinship LIKE '%$search_query%' OR 
+                                        r.lastName LIKE '%$search_query%' OR 
+                                        r.firstName LIKE '%$search_query%' OR 
+                                        r.age LIKE '%$search_query%' OR 
+                                        r.sex LIKE '%$search_query%' OR   
+                                        r.pwd LIKE '%$search_query%')";
+                                                    }
 
+                            // Sorting logic
                             if ($sort_column) {
                                 if ($sort_column == 'pwd') {
+                                    // Special sorting for PWD status
                                     $sql .= " ORDER BY r.pwd = 'NO', r.pwd $sort_order";
                                 } else {
                                     $sql .= " ORDER BY $sort_column $sort_order";
                                 }
                             }
 
+                            // Execute the query
                             $result = mysqli_query($conn, $sql);
 
+                            // Check if there are results and output them in the table
                             if ($result) {
                                 while ($row = mysqli_fetch_assoc($result)) {
                                     $id = $row['residentID'];
@@ -93,10 +104,17 @@
                                     $age = $row['age'];
                                     $sex = $row['sex'];
                                     $pwd = $row['pwd'];
+                                    $evacStatus = $row['evacStatus'];
 
-                                    $evacStatus = ($row['evacID'] && $row['evacID'] != 0) 
-                                        ? "<span style='color: green;'>Evacuated</span>" 
-                                        : "<span style='color: red;'>Not Evacuated</span>";
+                                    // Handle different evacStatus cases
+                                    $status_class = '';
+                                    if ($evacStatus === 'Evacuated') {
+                                        $status_class = 'status-evacuated';
+                                    } elseif ($evacStatus === 'Needs Assistance') {
+                                        $status_class = 'status-needs-assistance';
+                                    } else {
+                                        $status_class = 'status-not-evacuated';
+                                    }
 
                                     echo '<tr>
                                         <th scope="row">' . $id . '</th>
@@ -106,7 +124,7 @@
                                         <td>' . $age . '</td>
                                         <td>' . $sex . '</td>
                                         <td>' . $pwd . '</td>
-                                        <td>' . $evacStatus . '</td>
+                                       <td class="' . $status_class . '">' . $evacStatus . '</td>
                                         <td>
                                             <button class="btn btn-success">
                                                 <a href="editResident.php?updateID=' . urlencode($id) . '" class="text-light">EDIT</a>

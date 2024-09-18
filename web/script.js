@@ -18,7 +18,7 @@ if (savedLatitude && savedLongitude) {
     fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${savedLatitude}&lon=${savedLongitude}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('presentAdd').value = data.display_name; 
+            document.getElementById('presentAddress').value = data.display_name; 
         })
         .catch(error => console.error('Error:', error));
 }
@@ -34,7 +34,7 @@ function onMapClick(e) {
     fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${e.latlng.lat}&lon=${e.latlng.lng}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('presentAdd').value = data.display_name;
+            document.getElementById('presentAddress').value = data.display_name;
         })
         .catch(error => console.error('Error:', error));
 }

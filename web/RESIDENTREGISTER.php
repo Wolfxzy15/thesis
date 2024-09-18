@@ -16,11 +16,11 @@ if ($conn->connect_error) {
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
-    $presentAddress = $conn->real_escape_string($_POST['presentAdd']);
+    $presentAddress = $conn->real_escape_string($_POST['presentAddress']);
     $latitude = $conn->real_escape_string($_POST['latitude']);
     $longitude = $conn->real_escape_string($_POST['longitude']);
 
-    
+
     $num_members = count($_POST['lastName']);
     $num_pwd = 0;
 
@@ -31,10 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         }
     }
 
-    
-    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 0)";
+
+    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID, evacStatus) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 0, 'Not Evacuated')";
     if ($conn->query($sql_family) === TRUE) {
-        $family_id = $conn->insert_id; 
+        $family_id = $conn->insert_id;
     } else {
         die("Error: " . $sql_family . "<br>" . $conn->error);
     }
@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $contactNos = $_POST['contactNo'];
     $religions = $_POST['religion'];
     $emailAdds = $_POST['emailAdd'];
+    $occupations = $_POST['occupation'];
 
     for ($i = 0; $i < count($firstNames); $i++) {
         $lname = $lastNames[$i];
@@ -60,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         $mname = $middleNames[$i];
         $age = $ages[$i];
         $kin = $kinships[$i];
-        $sex = $_POST["sex" . ($i + 1)]; 
+        $sex = $_POST["sex" . ($i + 1)];
         $civil = $civilStats[$i];
         $dob = $dateOfBirths[$i];
         $pob = $placeOfBirths[$i];
@@ -69,30 +70,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         $contact = $contactNos[$i];
         $rel = $religions[$i];
         $email = $emailAdds[$i];
-        $pwd = $_POST["pwd" . ($i + 1)]; 
+        $pwd = $_POST["pwd" . ($i + 1)];
+        $occupation = $occupations[$i];
 
         if (
-            empty($kin) || empty($lname) || empty($fname) || empty($mname) || empty($age) || empty($civil) || 
-            empty($dob) || empty($pob) || empty($h) || empty($w) || empty($contact) || empty($rel) || 
+            empty($kin) || empty($lname) || empty($fname) || empty($mname) || empty($age) || empty($civil) ||
+            empty($dob) || empty($pob) || empty($h) || empty($w) || empty($contact) || empty($rel) ||
             empty($email) || empty($pwd)
         ) {
             $message = 'incomplete';
-            break; 
+            break;
         } else {
             $sql_resident = "INSERT INTO tbl_residents 
             (family_id, lastName, firstName, middleName, age, kinship, sex, civilStatus, 
-            dateOfBirth, placeOfBirth, height, weight, contactNo, religion, email, PWD) 
+            dateOfBirth, placeOfBirth, height, weight, contactNo, religion, email, PWD, occupation) 
             VALUES ('$family_id', '$lname', '$fname', '$mname', '$age', '$kin', '$sex', '$civil', 
-            '$dob', '$pob', '$h', '$w', '$contact', '$rel', '$email', '$pwd')";
-    
+            '$dob', '$pob', '$h', '$w', '$contact', '$rel', '$email', '$pwd', '$occupation')";
+
             $result = mysqli_query($conn, $sql_resident);
             if (!$result) {
                 $message = 'error';
-                break; 
+                break;
             }
         }
     }
-    
+
     if ($message !== 'incomplete') {
         $message = 'success';
     }
@@ -119,12 +121,14 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </head>
 
+
 <body>
     <?php include 'include/sidebar.php'; ?>
     <main>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 let formCount = 0;
+
                 function addForm() {
                     formCount++;
                     const formContainer = document.createElement('div');
@@ -168,11 +172,10 @@ $conn->close();
                                 <div>
                                     <input type="radio" value="Female" id="female${formCount}" name="sex${formCount}" required>
                                     <label for="female${formCount}">Female</label>
-                                </div>
-                                <div>
                                     <input type="radio" value="Male" id="male${formCount}" name="sex${formCount}" required>
                                     <label for="male${formCount}">Male</label>
                                 </div>
+                                
                             </div>
                             <div class="col-md-4 mb-2">
                                 <label for="civilStat${formCount}">Civil Status:</label>
@@ -186,7 +189,7 @@ $conn->close();
                             </div>
                             <div class="col-md-2">
                                 <label for="dateOfBirth${formCount}">Date Of Birth:</label>
-                                <input type="text" class="form-control" placeholder="mm/dd/yyyy" id="dateOfBirth${formCount}" name="dateOfBirth[]">
+                                <input type="date" class="form-control"  id="dateOfBirth${formCount}" name="dateOfBirth[]">
                             </div>
                             <div class="col-md-4">
                                 <label for="placeOfBirth${formCount}">Place Of Birth:</label>
@@ -215,6 +218,10 @@ $conn->close();
                                 <input type="text" class="form-control" placeholder="@email.com" id="emailAdd${formCount}" name="emailAdd[]">
                             </div>
                             <div class="col-md-4">
+                                <label for="occupation${formCount}">Occupation:</label>
+                                <input type="text" class="form-control" placeholder="" id="occupation${formCount}" name="occupation[]">
+                            </div>
+                            <div class="col-md-4">
                                 <label for="pwd${formCount}">Are you a person with disability?</label>
                                 <div>
                                     <input type="radio" value="YES" id="yes${formCount}" name="pwd${formCount}" required>YES
@@ -222,7 +229,7 @@ $conn->close();
                                 </div>
                             </div>
                         </div>
-                    </div><br>
+                    </div><br><hr>
                 `;
                     const familyForm = document.getElementById('familyForm');
                     if (familyForm) {
@@ -238,43 +245,44 @@ $conn->close();
         </script>
         <div class="container">
             <form id="familyForm" method="post">
-            <h1>Family Registration Form</h1><br>
-            <button type="submit" class="btn btn-success" form="familyForm" name="submit">Submit All</button><br><br>
-                <label for="presentAdd"><b>Present Address:</b></label><br>
+                <h1>Family Registration Form</h1><br>
+                <button type="submit" class="btn btn-success" form="familyForm" name="submit">Submit All</button><br><br>
+                <label for="presentAddress"><b>Present Address:</b></label><br>
                 <div id="map"></div>
-                <input type="text" class="form-control" placeholder="Choose from the map" id="presentAdd" name="presentAdd" required readonly>
+                <input type="text" class="form-control" placeholder="Choose from the map" id="presentAddress" name="presentAddress" required readonly>
                 <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude"><br><hr>
-                <button onclick="addForm()" class="btn btn-success"><i class="fa-solid fa-user-plus pr-2"></i>Add Family Member</button><br><br>
+                <input type="hidden" id="longitude" name="longitude"><br>
+                <hr>
+                <button onclick="addForm()" class="btn btn-primary"><i class="fa-solid fa-user-plus pr-2"></i>Add Family Member</button><br><br>
             </form>
         </div>
 
     </main>
 </body>
 <script>
-        <?php if ($message == 'incomplete'): ?>
-            Swal.fire({
-                icon: 'warning',
-                title: 'Form Incomplete',
-                text: 'Please fill up the form completely!',
-                confirmButtonText: 'OK'
-            });
-        <?php elseif ($message == 'success'): ?>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Family Registered successfully!',
-                confirmButtonText: 'OK'
-            });
-        <?php elseif ($message == 'error'): ?>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'error register resident information.',
-                confirmButtonText: 'OK'
-            });
-        <?php endif; ?>
-    </script>
+    <?php if ($message == 'incomplete'): ?>
+        Swal.fire({
+            icon: 'warning',
+            title: 'Form Incomplete',
+            text: 'Please fill up the form completely!',
+            confirmButtonText: 'OK'
+        });
+    <?php elseif ($message == 'success'): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Family Registered successfully!',
+            confirmButtonText: 'OK'
+        });
+    <?php elseif ($message == 'error'): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'error register resident information.',
+            confirmButtonText: 'OK'
+        });
+    <?php endif; ?>
+</script>
 <script src="script.js"></script>
 
 </html>

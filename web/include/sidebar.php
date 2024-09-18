@@ -32,6 +32,7 @@
                 <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i></i>Edit Residents<span class="sr-only">(current)</span></a></li>
                 <li><a class="nav-link" href="registerEvac.php"><i class="fa-solid fa-building pr-2"></i></i>EvacSite Registration<span class="sr-only">(current)</span></a></li>
                 <li><a class="nav-link" href="evacMap.php"><i class="fa-solid fa-building pr-2"></i></i>Evac Map<span class="sr-only">(current)</span></a></li>
+                
                 <br><br><br><br><br><br>
                
                 

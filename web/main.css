@@ -93,7 +93,7 @@ main {
     #map {
         height: 250px;
 		width: 100vw;
-        z-index: 100;
+        
     }
 
     .sidebar.active~#map .leaflet-control {
@@ -103,10 +103,10 @@ main {
 }
 
 #map {
-    height: 400px;
+    height: 550px;
     margin-top: 10px;
     width: 100%;
-    z-index: 100;
+   
     
 }
 
@@ -118,7 +118,7 @@ main {
 .table-wrapper {
     overflow-x: auto;
     overflow-y: auto;
-    max-height: 650px;
+    max-height: 780px;
 }
 
 th,
@@ -129,7 +129,8 @@ td {
 table thead th {
     position: sticky;
     top: 0;
-    background-color: #ffffff;
+    background-color: #1E2A5E;
+    color: aliceblue;
     z-index: 2;
 }
 
@@ -142,6 +143,8 @@ table thead th {
     background-color: aliceblue;
     padding: 10px;
     border-radius: 11px;
+    max-width: 100%;
+   
 }
 
 .container1{
@@ -156,6 +159,40 @@ table thead th {
     padding: 10px;
     border-radius: 11px;
     width: 100%;
+}
+
+input:not([type="radio"]):valid, select:valid {
+    font-weight: bold;
+}
+
+input:not([type="radio"])::placeholder {
+    font-weight: normal; 
+}
+
+textarea:valid {
+    font-weight: bold;
+}
+
+input[type="radio"]:checked + label {
+    font-weight: bold;
+}
+
+.status-evacuated {
+    color: white;
+    background-color: green;
+    font-weight: bold;
+}
+
+.status-not-evacuated {
+    color: white;
+    background-color: red;
+    font-weight: bold;
+}
+
+.status-needs-assistance {
+    color: white;
+    background-color: orange;
+    font-weight: bold;
 }
 
 
