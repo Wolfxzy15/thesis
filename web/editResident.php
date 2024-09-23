@@ -73,17 +73,18 @@ if (isset($_POST["update"])) {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $pwd = mysqli_real_escape_string($conn, $_POST['pwd']);
     $occupation = mysqli_real_escape_string($conn, $_POST['occupation']);
-    $latitude = mysqli_real_escape_string($conn, $_POST['latitude']);
-    $longitude = mysqli_real_escape_string($conn, $_POST['longitude']);
-    $presentAddress = mysqli_real_escape_string($conn, $_POST['presentAddress']);
 
     if (
         empty($kinship) || empty($lastName) || empty($firstName) || empty($middleName) || empty($age) || empty($civilStatus) ||
         empty($dateOfBirth) || empty($placeOfBirth) || empty($height) || empty($weight) || empty($contactNo) || empty($religion) ||
-        empty($email) || empty($pwd) || empty($occupation)
+        empty($email) || empty($pwd) || empty($occupation) || empty($presentAddress)
     ) {
         $message = 'incomplete';
     } else {
+        // Fetch current PWD status before updating
+        $current_pwd = $row_resident['pwd']; // Assuming 'pwd' is the field for PWD status
+
+        // Prepare update statement for resident
         $sql_resident_update = "UPDATE tbl_residents SET 
             lastName = '$lastName', firstName = '$firstName', middleName = '$middleName', age = '$age', 
             kinship = '$kinship', sex = '$sex', civilStatus = '$civilStatus', 
@@ -91,16 +92,21 @@ if (isset($_POST["update"])) {
             weight = '$weight', contactNo = '$contactNo', religion = '$religion', email = '$email', 
             pwd = '$pwd', occupation = '$occupation'
             WHERE residentID = $id";
-        
-        $sql_family_update = "UPDATE tbl_families SET 
-        presentAddress = '$presentAddress', latitude = '$latitude', longitude = '$longitude'
-        WHERE family_id = $family_id";
 
-
+        // Execute the resident update
         $result_resident_update = mysqli_query($conn, $sql_resident_update);
-        $result_family_update = mysqli_query($conn, $sql_family_update);
 
-        if ($result_resident_update && $result_family_update) {
+        if ($result_resident_update) {
+            // Check if the PWD status has changed
+            if ($current_pwd == 'NO' && $pwd == 'YES') {
+                // Increment num_pwd in the family
+                $sql_increment_pwd = "UPDATE tbl_families SET num_pwd = num_pwd + 1 WHERE family_id = $family_id";
+                mysqli_query($conn, $sql_increment_pwd);
+            } elseif ($current_pwd == 'YES' && $pwd == 'NO') {
+                // Decrement num_pwd in the family
+                $sql_decrement_pwd = "UPDATE tbl_families SET num_pwd = num_pwd - 1 WHERE family_id = $family_id";
+                mysqli_query($conn, $sql_decrement_pwd);
+            }
             $message = 'success';
         } else {
             $message = 'error';
@@ -153,7 +159,7 @@ if (isset($_POST["update"])) {
                     </div>
                     <div class="col-md-4 mb-2">
                         <label for="age">Age:</label>
-                        <input type="text" class="form-control" value="<?php echo $age; ?>" placeholder="" id="age" name="age">
+                        <input type="text" class="form-control" value="<?php echo $age; ?>" placeholder="" id="age" name="age" readonly>
                     </div>
                     <div class="col-md-7">
                         <label for="kinship">Kinship Position:</label>
@@ -191,7 +197,7 @@ if (isset($_POST["update"])) {
                     </div>
                     <div class="col-md-2">
                         <label for="dateOfBirth">Date Of Birth:</label>
-                        <input type="date" class="form-control" value="<?php echo $dateOfBirth; ?>" placeholder="yyyy/mm/dd" id="dateOfBirth" name="dateOfBirth">
+                        <input type="date" class="form-control" value="<?php echo $dateOfBirth; ?>" onchange="updateAge()" placeholder="yyyy/mm/dd" id="dateOfBirth" name="dateOfBirth">
                     </div>
                     <div class="col-md-4">
                         <label for="placeOfBirth">Place Of Birth:</label>
@@ -236,9 +242,6 @@ if (isset($_POST["update"])) {
                 <div class="col-md-12">
                     <label for="presentAdd">Present Address:</label>
                     <input type="text" class="form-control" value="<?php echo $presentAddress; ?>" placeholder="Present Address" id="presentAddress" name="presentAddress" required readonly>
-                    <div id='map'></div>
-                    <input type="hidden" id="latitude" value="<?php echo $latitude; ?>" name="latitude">
-                    <input type="hidden" id="longitude" value="<?php echo $longitude; ?>" name="longitude">
                 </div><br>
                 <button type="update" class="btn btn-success" name="update" style="width: 100%;">UPDATE</button>
         </div>
@@ -269,8 +272,6 @@ if (isset($_POST["update"])) {
         });
     <?php endif; ?>
 </script>
-<script src="address.js"></script>
+<script src="updateAge.js"></script>
 </body>
-
-
 </html>

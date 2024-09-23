@@ -20,7 +20,7 @@
 
 <body>
 
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'include/user_Sidebar.php'; ?>
     <main>
         
         <div class="table-container">
@@ -157,7 +157,7 @@
                                         <td class="' . $status_class . '">' . $status . '</td>
                                         <td>
                                             <button class="btn btn-success">
-                                                <a href="viewFamily.php?family_id=' . $family_id . '" class="text-light">VIEW</a>
+                                                <a href="user_Residents.php?family_id=' . $family_id . '" class="text-light">VIEW</a>
                                             </button>
                                         </td>
                                         <td>
@@ -180,5 +180,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
 
 </body>
-<!-- swapped the register button from displayFamilies.php to viewFamily.php -->
+
 </html>

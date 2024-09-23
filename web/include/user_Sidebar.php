@@ -27,11 +27,10 @@
     <aside class="sidebar" id="sidebar">
         <nav>
             <ul><br>
-                <li><a class="nav-link" href="RESIDENTREGISTER.php"><i class="fa-solid fa-user-plus pr-2"></i></i>Add Residents <span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="displayFamilies.php"><i class="fa-solid fa-people-roof pr-2"></i>Families<span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i></i>Edit Residents<span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="registerEvac.php"><i class="fa-solid fa-building pr-2"></i></i>Add new Evac Site<span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="evacMap.php"><i class="fa-solid fa-map pr-2"></i></i>Evac Map<span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="user_fam_register.php"><i class="fa-solid fa-user-plus pr-2"></i></i>Add Residents <span class="sr-only">(current)</span></a></l>
+                <li><a class="nav-link" href="user_Families.php"><i class="fa-solid fa-people-roof pr-2"></i>Families<span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="user_Residents.php"><i class="fa-solid fa-edit pr-2"></i></i>Residents<span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="user_map.php"><i class="fa-solid fa-building pr-2"></i></i>Evac Map<span class="sr-only">(current)</span></a></li>
             </ul>
         </nav>
     </aside>

@@ -3,29 +3,7 @@
 <script type="text/javascript">
     function submitData() {
         $(document).ready(function() {
-            var data = {
-                kinship: $("#kinship option:selected").val(),
-                lastName: $("#lastName").val(),
-                fName: $("#fName").val(),
-                mName: $("#mName").val(),
-                age: $("#age").val(),
-                presentAdd: $("#presentAdd").val(),
-                provAdd: $("#provAdd").val(),
-                sex: $('input[name="sex"]:checked').val(),
-                civilStat: $("#civilStat option:selected").val(),
-                dateOfBirth: $("#dateOfBirth").val(),
-                placeOfBirth: $("#placeOfBirth").val(),
-                height: $("#height").val(),
-                weight: $("#weight").val(),
-                contactNo: $("#contactNo").val(),
-                religion: $("#religion").val(),
-                emailAdd: $("#emailAdd").val(),
-                famComposition: $("#famComposition").val(),
-                pwd: $('input[name="pwd"]:checked').val(),
-                latitude: $("#latitude").val(),
-                longitude: $("#longitude").val(),
-                action: $("#action").val(),
-            };
+            var data = $("#addFamilyMemberForm").serialize();
 
             var isFormIncomplete = false;
             $(".form-control").each(function() {

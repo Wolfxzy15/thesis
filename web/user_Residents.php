@@ -17,7 +17,7 @@
 
 <body>
 
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'include/user_Sidebar.php'; ?>
     <main>
         <div class="table-container">
             <form class="form-inline mx-auto" method="GET" action="">
@@ -44,7 +44,6 @@
                                 <th scope="col">Sex</th>
                                 <th scope="col">PWD</th>
                                 <th scope="col">Evacuation Status</th>
-                                <th scope="col">EDIT Info</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -125,11 +124,6 @@
                                         <td>' . $sex . '</td>
                                         <td>' . $pwd . '</td>
                                        <td class="' . $status_class . '">' . $evacStatus . '</td>
-                                        <td>
-                                            <button class="btn btn-success">
-                                                <a href="editResident.php?updateID=' . urlencode($id) . '" class="text-light">EDIT</a>
-                                            </button>
-                                        </td>
                                     </tr>';
                                 }
                             } else {
@@ -140,9 +134,6 @@
                     </table>
                 </form>
             </div>
-
-            <!-- Button to open modal/form to add new family member -->
-
         </div>
         </div>
         </div>

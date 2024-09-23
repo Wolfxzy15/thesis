@@ -15,8 +15,27 @@
 </head>
   <style>
     body{
-      background-color: #7C93C3;
+      background-image: url('images/calle_real.jpg');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
     }
+    body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+  }
+  .card{
+    background-color: #93c7f0;
+    background-image: linear-gradient(135deg, #93c7f0 0%, #bbc9c9 100%);
+    color: black;
+    border-radius: 15px;
+  }
     .center-image {
       display: flex;
       justify-content: center;
@@ -41,20 +60,26 @@
     Barangay
   </a>
 </nav>
-  <div class="container mt-5 pt-5">
+  <div class="container pt-2">
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card">
-          <div class="card-header">
-            <div class="center-image">
+            <div class="center-image mt-4">
               <img src="images/citylogo.png"
                 width="90" height="90" alt="">
             </div>
-            <h2 style="text-align: center;">Administrator Registration</h2>
-          </div>
+            <h2 style="text-align: center;">SIGN UP</h2>
           <div class="card-body">
             <form autocomplete="off" action="" method="post">
               <input type="hidden" id="action" value="register">
+              <div class="form-group">
+                <label for="firstName">Firstname</label>
+                <input type="firstName" class="form-control" id="firstName" placeholder="Enter your Firstname" name="firstName" required>
+              </div>
+              <div class="form-group">
+                <label for="lastName">Lastname</label>
+                <input type="lastName" class="form-control" id="lastName" placeholder="Enter your Lastname" name="lastName" required>
+              </div>
               <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" class="form-control" id="username" placeholder="Register Username" name="username" required>
@@ -63,12 +88,25 @@
                 <label for="password">Password</label>
                 <input type="password" class="form-control" id="password" placeholder="Register Password" name="password" required>
               </div>
+              <div class="form-group">
+                <label for="cpassword">Confirm Password</label>
+                <input type="password" class="form-control" id="cpassword" placeholder="Confirm Password" name="cpassword" required>
+              </div>
+              <div class="form-group">
+                <label for="emailAdd">Email Address</label>
+                <input type="emailAdd" class="form-control" id="emailAdd" placeholder="@email.com" name="emailAdd" required>
+              </div>
+              <div class="form-group">
+                <label for="userType">User Type</label>
+                <select name = "userType" id=userType class="form-control">
+                  <option value="admin"> Admin </option>
+                  <option value="user"> User </option>
+                </select>
+              </div>
               <button type="button" onclick="submitData();" class="btn btn-success" style="width: 100%">Register</button>
-              <br><br>
-              <p class="mb-0">Already have an account? <a href="adminLogin.php">Login here</a>.</p>
+              <p class="mb-0">Already have an account? <a href="login.php">Login here</a>.</p>
             </form>
-
-            <?php require 'adminScript.php'; ?>
+            <?php require 'loginScript.php'; ?>
           </div>
         </div>
       </div>

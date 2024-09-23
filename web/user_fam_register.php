@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     }
 
 
-    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID, evacStatus) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', NULL, 'Not Evacuated')";
+    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID, evacStatus) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 0, 'Not Evacuated')";
     if ($conn->query($sql_family) === TRUE) {
         $family_id = $conn->insert_id;
     } else {
@@ -159,7 +159,7 @@ $conn->close();
 </head>
 
 <body>
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'include/user_Sidebar.php'; ?>
     <main>
         <script>
             document.addEventListener('DOMContentLoaded', function() {

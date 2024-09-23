@@ -75,24 +75,47 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
         $nearestEvac = $evacData[0] ?? null;
     }
 
-    if (isset($_POST['register']) && isset($_POST['evac_id'])) {
-        $evacID = $_POST['evac_id'];
+    if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longitude'])) {
+        $familyID = $_GET['family_id'];
+        $familyLat = (float) $_GET['latitude'];
+        $familyLong = (float) $_GET['longitude'];
 
-        $update_sql = "UPDATE tbl_families SET evacID = '$evacID' WHERE family_id = '$familyID'";
-        if (mysqli_query($conn, $update_sql)) {
+        // Query evacuation centers (same as before)
 
-            $update_evac_sql = "UPDATE tbl_evac_centers SET current_capacity = current_capacity + 1 WHERE evacID = '$evacID'";
-            mysqli_query($conn, $update_evac_sql);
+        // Handle family registration
+        if (isset($_POST['register']) && isset($_POST['evac_id'])) {
+            $newEvacID = $_POST['evac_id'];
 
-            $success = true;
-        } else {
-            echo "Error registering the family: " . mysqli_error($conn);
-            $success = false;
+            // Get current evacuation center for the family
+            $current_evac_query = "SELECT evacID FROM tbl_families WHERE family_id = '$familyID'";
+            $current_evac_result = mysqli_query($conn, $current_evac_query);
+            $current_evac_row = mysqli_fetch_assoc($current_evac_result);
+            $currentEvacID = $current_evac_row['evacID'];
+
+            // Subtract the family from the current evacuation center's capacity
+            if ($currentEvacID) {
+                $subtract_capacity_sql = "UPDATE tbl_evac_centers SET current_capacity = current_capacity - 1 WHERE evacID = '$currentEvacID'";
+                mysqli_query($conn, $subtract_capacity_sql);
+            }
+
+            // Update the family's evacID to the new center
+            $update_family_sql = "UPDATE tbl_families SET evacID = '$newEvacID' WHERE family_id = '$familyID'";
+            if (mysqli_query($conn, $update_family_sql)) {
+
+                // Add the family to the new evacuation center's capacity
+                $add_capacity_sql = "UPDATE tbl_evac_centers SET current_capacity = current_capacity + 1 WHERE evacID = '$newEvacID'";
+                mysqli_query($conn, $add_capacity_sql);
+
+                $success = true;
+            } else {
+                echo "Error updating the family: " . mysqli_error($conn);
+                $success = false;
+            }
         }
+    } else {
+        echo "Family data not provided.";
+        exit;
     }
-} else {
-    echo "Family data not provided.";
-    exit;
 }
 ?>
 
@@ -170,23 +193,22 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
         </div>
 
         <script>
-            // Family and evacuation center coordinates from PHP
             var familyLat = <?= $familyLat; ?>;
             var familyLong = <?= $familyLong; ?>;
             var evacCenters = <?= json_encode($evacData); ?>;
             var familyID = <?= json_encode($familyID); ?>;
             var success = <?= isset($success) && $success ? 'true' : 'false'; ?>;
 
-            // Initialize map centered at the family's location
+
             var map = L.map('map').setView([familyLat, familyLong], 18);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-            // Add family location marker
+
             L.marker([familyLat, familyLong]).addTo(map)
                 .bindPopup("Family: " + familyID + " Location")
                 .openPopup();
 
-            // Add evacuation centers to the map
+
             evacCenters.forEach(function(evac) {
                 var evacLat = evac.latitude;
                 var evacLong = evac.longitude;
@@ -203,7 +225,7 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
                     .openTooltip();
             });
 
-            // Show SweetAlert on successful registration
+
             if (success) {
                 Swal.fire({
                     title: 'Success!',
