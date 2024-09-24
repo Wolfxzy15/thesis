@@ -47,33 +47,26 @@ function onMapClick(e) {
 // Attach the click event to the map
 map.on('click', onMapClick);
 
+// Function to calculate age based on the date of birth
 function calculateAge(formCount) {
-    const dobField = document.getElementById(`dateOfBirth${formCount}`);
-    const ageField = document.getElementById(`age${formCount}`);
+    const dobInput = document.getElementById(`dateOfBirth${formCount}`);
+    const ageInput = document.getElementById(`age${formCount}`);
+    
+    const dobValue = dobInput.value;
+    if (dobValue) {
+        const dob = new Date(dobValue);
+        const today = new Date();
 
-    const dob = new Date(dobField.value); // Get date of birth as a Date object
-    const today = new Date(); // Get today's date
-
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDifference = today.getMonth() - dob.getMonth();
-    const dayDifference = today.getDate() - dob.getDate();
-
-    // Adjust if the birthday hasn't occurred yet this year
-    if (monthDifference < 0 || (monthDifference === 0 && dayDifference < 0)) {
-        age--;
-    }
-
-    ageField.value = age;
-
-    document.getElementById('dateOfBirth').addEventListener('change', function () {
-        const dob = this.value;
-        if (dob) {
-            const age = calculateAge(dob);
-            document.getElementById('age').value = age;
+        // Calculate age
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDifference = today.getMonth() - dob.getMonth();
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dob.getDate())) {
+            age--;
         }
-    });// Set the calculated age in the age input field
 
-
+        ageInput.value = age; // Update the age field
+    } else {
+        ageInput.value = ''; // Clear the age field if no date is selected
+    }
 }
-
 
