@@ -10,11 +10,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $latitude = !empty($_POST['latitude']) ? (float)$_POST['latitude'] : null;
         $longitude = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
         $evacAddress = !empty($_POST['evacAddress']) ? mysqli_real_escape_string($conn, $_POST['evacAddress']) : null;
+        $max = ($height * $width)/1.45;
 
         if ($evacName && $height && $width && $latitude && $longitude) {
             // Insert new evacuation center into tbl_evac_centers
-            $sql_site = "INSERT INTO tbl_evac_centers (evacName, height, width, latitude, longitude, evacAddress)
-                    VALUES ('$evacName', $height, $width, $latitude, $longitude, '$evacAddress')";
+            $sql_site = "INSERT INTO tbl_evac_centers (evacName, height, width, latitude, longitude, evacAddress, max_capacity)
+                    VALUES ('$evacName', $height, $width, $latitude, $longitude, '$evacAddress', '$max')";
             
             if (mysqli_query($conn, $sql_site)) {
                 $message = 'success';

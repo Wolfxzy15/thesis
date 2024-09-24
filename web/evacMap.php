@@ -5,8 +5,10 @@ include 'db.php'; // Connect to the database
 $defaultLat = 10.7344;
 $defaultLong = 122.5580;
 
-$sql = "SELECT evac.evacID, evac.evacName, evac.max_capacity, evac.current_capacity, 
-        (evac.max_capacity <= evac.current_capacity) AS is_full, 
+// SQL query to get evacuation center details and current capacity (sum of num_members)
+$sql = "SELECT evac.evacID, evac.evacName, evac.max_capacity, 
+        IFNULL(SUM(fam.num_members), 0) AS current_capacity, 
+        (evac.max_capacity <= IFNULL(SUM(fam.num_members), 0)) AS is_full, 
         GROUP_CONCAT(fam.family_id) AS family_ids
         FROM tbl_evac_centers evac
         LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
@@ -14,7 +16,7 @@ $sql = "SELECT evac.evacID, evac.evacName, evac.max_capacity, evac.current_capac
 
 $result = mysqli_query($conn, $sql);
 
-// Query evacuation centers
+// Query evacuation centers to retrieve their coordinates and other details for the map
 $sql = "SELECT evacID, evacName, latitude, longitude, max_capacity, current_capacity FROM tbl_evac_centers";
 $evacCenters = mysqli_query($conn, $sql);
 
@@ -71,10 +73,10 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
                     <thead>
                         <tr>
                             <th>Evacuation Center</th>
-                            <th>Max Capacity -Families</th>
-                            <th>Current Capacity -Families</th>
+                            <th>Max Capacity</th>
+                            <th>Current Capacity</th>
                             <th>Status</th>
-                            <th>Assigned Families</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
@@ -84,7 +86,7 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
                                 <td><?= $row['max_capacity']; ?></td>
                                 <td><?= $row['current_capacity']; ?></td>
                                 <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
-                                <td><?= $row['family_ids'] ? $row['family_ids'] : 'None'; ?></td>
+                                
                             </tr>
                         <?php endwhile; ?>
                     </tbody>

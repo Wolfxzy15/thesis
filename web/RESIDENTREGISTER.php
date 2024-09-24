@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     }
 
 
-    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID, evacStatus) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', NULL, 'Not Evacuated')";
+    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID, evacStatus) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 0, 'Not Evacuated')";
     if ($conn->query($sql_family) === TRUE) {
         $family_id = $conn->insert_id;
     } else {
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         $occupation = $occupations[$i];
 
         if (
-            empty($kin) || empty($lname) || empty($fname) || empty($mname) || empty($age) || empty($civil) ||
+            empty($kin) || empty($lname) || empty($fname) || empty($mname) || empty($civil) ||
             empty($dob) || empty($pob) || empty($h) || empty($w) || empty($contact) || empty($rel) ||
             empty($email) || empty($pwd)
         ) {

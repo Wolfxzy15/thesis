@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $occupation = mysqli_real_escape_string($conn, $_POST['occupation']);
 
     // Check for incomplete fields
-    if (empty($firstName) || empty($lastName) || empty($middleName) || empty($age) || empty($kinship) 
+    if (empty($firstName) || empty($lastName) || empty($middleName) || empty($kinship) 
         || empty($sex) || empty($civilStatus) || empty($dateOfBirth) || empty($placeOfBirth) 
         || empty($height) || empty($weight) || empty($contactNo) || empty($religion) 
         || empty($email) || empty($pwd) || empty($occupation)) {
