@@ -169,10 +169,10 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
                     <thead>
                         <tr>
                             <th>Evacuation Center</th>
-                            <th>Max Capacity -Families</th>
+                            <th>Max Capacity</th>
                             <th>Current Capacity -Families</th>
                             <th>Status</th>
-                            <th>Assigned Families</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
@@ -182,7 +182,7 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
                                 <td><?= $row['max_capacity']; ?></td>
                                 <td><?= $row['current_capacity']; ?></td>
                                 <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
-                                <td><?= $row['family_ids'] ? $row['family_ids'] : 'None'; ?></td>
+                                
                             </tr>
                         <?php endwhile; ?>
                     </tbody>

@@ -121,9 +121,9 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
                         <tr>
                             <th>Evacuation Center</th>
                             <th>Max Capacity -Families</th>
-                            <th>Current Capacity -Families</th>
+                            <th>Current Capacity</th>
                             <th>Status</th>
-                            <th>Assigned Families</th>
+                        
                         </tr>
                     </thead>
                     <tbody>
@@ -133,7 +133,7 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
                                 <td><?= $row['max_capacity']; ?></td>
                                 <td><?= $row['current_capacity']; ?></td>
                                 <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
-                                <td><?= $row['family_ids'] ? $row['family_ids'] : 'None'; ?></td>
+                                
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
