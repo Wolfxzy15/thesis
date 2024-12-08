@@ -293,7 +293,39 @@
         </div>
         <?php require 'addressScript.php'; ?>
         </div>
+        <br>
+        <div class="container1">
+            <h2>Evacuation Site Status</h2>
+
+            <?php if ($result): ?>
+                <table class="table ">
+                    <thead>
+                        <tr>
+                            <th>Evacuation Center</th>
+                            <th>Max Capacity</th>
+                            <th>Current Capacity -Families</th>
+                            <th>Status</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                            <tr>
+                                <td><?= $row['evacName']; ?></td>
+                                <td><?= $row['max_capacity']; ?></td>
+                                <td><?= $row['current_capacity']; ?></td>
+                                <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
+                                
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p>No evacuation centers found.</p>
+            <?php endif; ?>
+        </div>
     </main>
+    
     <script>
         function calculateAge() {
             const dobInput = document.getElementById('dateOfBirth');

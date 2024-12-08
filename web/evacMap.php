@@ -5,27 +5,26 @@ include 'db.php'; // Connect to the database
 $defaultLat = 10.7344;
 $defaultLong = 122.5580;
 
-// SQL query to get evacuation center details and current capacity (sum of num_members)
-$sql = "SELECT evac.evacID, evac.evacName, evac.max_capacity, 
-        IFNULL(SUM(fam.num_members), 0) AS current_capacity, 
-        (evac.max_capacity <= IFNULL(SUM(fam.num_members), 0)) AS is_full, 
-        GROUP_CONCAT(fam.family_id) AS family_ids
-        FROM tbl_evac_centers evac
-        LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
-        GROUP BY evac.evacID";
+// SQL query to get evacuation center details and their status
+$sql = "
+SELECT evac.evacID, evac.evacName, evac.max_capacity, 
+    IFNULL(SUM(fam.num_members), 0) AS current_capacity, 
+    CASE 
+        WHEN IFNULL(SUM(fam.num_members), 0) >= evac.max_capacity THEN 'Full'
+        WHEN IFNULL(SUM(fam.num_members), 0) >= (evac.max_capacity * 0.8) THEN 'Almost Full'
+        ELSE 'Available'
+    END AS status,
+    evac.latitude, evac.longitude
+FROM tbl_evac_centers evac
+LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
+GROUP BY evac.evacID";
 
 $result = mysqli_query($conn, $sql);
 
-// Query evacuation centers to retrieve their coordinates and other details for the map
-$sql = "SELECT evacID, evacName, latitude, longitude, max_capacity, current_capacity FROM tbl_evac_centers";
-$evacCenters = mysqli_query($conn, $sql);
-
 $evacData = []; // Store evacuation centers data
-
-while ($row = mysqli_fetch_assoc($evacCenters)) {
-    $evacData[] = $row; // Store evacuation center information
+while ($row = mysqli_fetch_assoc($result)) {
+    $evacData[] = $row;
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -47,54 +46,64 @@ while ($row = mysqli_fetch_assoc($evacCenters)) {
 <?php include 'include/sidebar.php'; ?>
 <main>
 <div class="container1">
-<h2>Evacuation Centers in Brgy. Tabuc Suba, Jaro, Iloilo City</h2>
+    <h2>Evacuation Centers in Brgy. Tabuc Suba, Jaro, Iloilo City</h2>
 
-<div id='map' style="height: 600px;"></div>
+    <div id='map' style="height: 600px;"></div>
 </div>
 <br>
 <table class="table table-light">
     <thead>
-    <tr>
-        <th scope="col">LEGEND</th>
-        <th scope="col">Description</th>
-    </tr>
+        <tr>
+            <th scope="col">LEGEND</th>
+            <th scope="col">Description</th>
+        </tr>
     </thead>
-        <tbody>
-            <tr>
-                <th scope="row"><i class="fa-solid fa-building"></i></th>
-                <td>- Evacuation Centers</td>
-            </tr>
-        </tbody>
+    <tbody>
+        <tr>
+            <th scope="row"><i class="fa-solid fa-building"></i></th>
+            <td>- Evacuation Centers</td>
+        </tr>
+    </tbody>
 </table>
+
 <div class="container1">
-            <h2>Evacuation Site Status</h2>
-            <?php if ($result): ?>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Evacuation Center</th>
-                            <th>Max Capacity</th>
-                            <th>Current Capacity</th>
-                            <th>Status</th>
-                            
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                            <tr>
-                                <td><?= $row['evacName']; ?></td>
-                                <td><?= $row['max_capacity']; ?></td>
-                                <td><?= $row['current_capacity']; ?></td>
-                                <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
-                                
-                            </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p>No evacuation centers found.</p>
-            <?php endif; ?>
-        </div>
+    <h2>Evacuation Site Status</h2>
+    <?php if ($result): ?>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Evacuation Center</th>
+                    <th>Max Capacity</th>
+                    <th>Current Capacity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($evacData as $row): ?>
+                    <tr>
+                        <td><?= $row['evacName']; ?></td>
+                        <td><?= $row['max_capacity']; ?></td>
+                        <td><?= $row['current_capacity']; ?></td>
+                        <td>
+                            <?php 
+                            if ($row['status'] === 'Full') {
+                                echo '<span style="color:red">Full</span>';
+                            } elseif ($row['status'] === 'Almost Full') {
+                                echo '<span style="color:orange">Almost Full</span>';
+                            } else {
+                                echo '<span style="color:green">Available</span>';
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>No evacuation centers found.</p>
+    <?php endif; ?>
+</div>
+
 <script>
 // Default coordinates for the map (Brgy. Tabuc Suba)
 var defaultLat = <?= $defaultLat; ?>;
@@ -110,12 +119,31 @@ evacCenters.forEach(function(evac) {
     var evacLat = evac.latitude;
     var evacLong = evac.longitude;
     var evacName = evac.evacName;
+    var status = evac.status;
 
-    var evacIcon = L.icon({iconUrl: "images/building-solid.svg", iconSize:[35,35]})
-    L.marker([evacLat, evacLong], {icon: evacIcon}).addTo(map)
+    // Default icon path based on the status
+    var iconUrl = "images/building-solid-green.svg"; // Default to green (Available)
+
+    // Change icon based on status
+    if (status === "Full") {
+        iconUrl = "images/building-solid-red.svg"; // Red for Full
+    } else if (status === "Almost Full") {
+        iconUrl = "images/building-solid-orange.svg"; // Orange for Almost Full
+    }
+
+    var evacIcon = L.icon({
+        iconUrl: iconUrl,  // Use the color-specific SVG based on status
+        iconSize: [35, 35], // Size of the icon
+        iconAnchor: [17, 35], // Anchor point of the icon
+        popupAnchor: [0, -35], // Where the popup shows up
+    });
+
+    // Add marker to the map with the appropriate colored icon
+    L.marker([evacLat, evacLong], { icon: evacIcon }).addTo(map)
         .bindTooltip(evacName)
         .openTooltip();
 });
+
 </script>
 
 </main>

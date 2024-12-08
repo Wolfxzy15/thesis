@@ -9,6 +9,31 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // Initialize marker variable
 var marker;
 
+var tabucSubaBoundary = [
+    [10.743164, 122.553640], // starting point of border coordinates
+    [10.739383, 122.559256],
+    [10.7384, 122.5585],
+    [10.7376, 122.5596],
+    [10.7371, 122.5599],
+    [10.7358, 122.5610],
+    [10.7352, 122.5603],
+    [10.7328, 122.5647], // right upper corner
+    [10.7282, 122.5647],
+    [10.7254, 122.5631],
+    [10.7242, 122.5596], // lower-right corner
+    [10.7291, 122.5587],
+    [10.7311, 122.5575],
+    [10.7319, 122.5540],
+    [10.7328, 122.5516], // lower left corner
+    [10.743164, 122.553640] // back to starting point
+];
+
+var tabucSubaPolygon = L.polygon(tabucSubaBoundary, {
+    color: "#3388ff",
+    weight: 3,
+    fill: true,
+}).addTo(map);
+
 
 function placeMarker(lat, lng, address) {
 
