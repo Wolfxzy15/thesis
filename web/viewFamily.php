@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Display Residents</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
@@ -21,7 +22,7 @@
     <main>
         <div class="table-container">
             <?php
-                include 'db.php';
+            include 'db.php';
             if (isset($_GET['family_id'])) {
                 $family_id = $_GET['family_id'];
             } else {
@@ -37,17 +38,18 @@
             } else {
                 echo "Coordinates not found for the family!";
             }
-            ?>  
-        <h4 style="color: aliceblue">Family ID: <?php echo $family_id; ?></h4>
-        <div class="container-4">
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFamilyMemberModal"><i class="fa-solid fa-user-plus pr-2"></i>Add Family Member</button>  
-        <form action="evacSite.php" method="GET">
-                <input type="hidden" name="family_id" value="<?php echo $family_id; ?>">
-                <input type="hidden" name="latitude" value="<?php echo $latitude; ?>">
-                <input type="hidden" name="longitude" value="<?php echo $longitude; ?>">  
-                <button class="btn btn-success ml-4" type="submit"><i class="fa-solid fa-building pr-2"></i>Evacuation Center</button>
-            </form>
-        </div>
+
+            ?>
+            <h4 style="color: aliceblue">Family ID: <?php echo $family_id; ?></h4>
+            <div class="container-4">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFamilyMemberModal"><i class="fa-solid fa-user-plus pr-2"></i>Add Family Member</button>
+                <form action="evacSite.php" method="GET">
+                    <input type="hidden" name="family_id" value="<?php echo $family_id; ?>">
+                    <input type="hidden" name="latitude" value="<?php echo $latitude; ?>">
+                    <input type="hidden" name="longitude" value="<?php echo $longitude; ?>">
+                    <button class="btn btn-success ml-4" type="submit"><i class="fa-solid fa-building pr-2"></i>Evacuation Center</button>
+                </form>
+            </div>
             <br>
             <div class="table-wrapper">
                 <form>
@@ -161,23 +163,32 @@
                     </table>
                 </form>
             </div>
-            <!-- Fetching presentAddress and coordinates for the family -->
             <?php
-            $family_query = "SELECT presentAddress, latitude, longitude FROM tbl_families WHERE family_id = '$family_id'";
+            $family_query = "SELECT f.presentAddress, f.latitude, f.longitude, e.evacName, e.latitude AS evacLat, e.longitude AS evacLon
+            FROM tbl_families f
+            LEFT JOIN tbl_evac_centers e ON f.evacID = e.evacID
+            WHERE f.family_id = '$family_id'";
             $family_result = mysqli_query($conn, $family_query);
             $family_row = mysqli_fetch_assoc($family_result);
+            $presentAddress = $family_row['presentAddress'];
+            $familyLat = $family_row['latitude'];
+            $familyLon = $family_row['longitude'];
+            $evacName = $family_row['evacName'];
+            $evacLat = $family_row['evacLat'];
+            $evacLon = $family_row['evacLon'];
             ?>
+
 
             <div class="container">
                 <label for="presentAdd">Present Address:</label>
-                <input type="text" class="form-control" value="<?php echo $family_row['presentAddress']; ?>" placeholder="Present Address" id="presentAddress" name="presentAddress" read>
+                <input type="text" class="form-control" value="<?php echo $family_row['presentAddress']; ?>" placeholder="Present Address" id="presentAddress" name="presentAddress" readonly>
                 <div id="map" style="height: 400px;"></div>
                 <input type="hidden" id="latitude" name="latitude" value="<?php echo $family_row['latitude']; ?>">
                 <input type="hidden" id="longitude" name="longitude" value="<?php echo $family_row['longitude']; ?>"><br>
                 <button id="updateAddress" class="btn btn-primary">Update Address</button>
             </div>
 
-            <!-- Button to open modal/form to add new family member -->
+
             <div class="modal fade" id="addFamilyMemberModal" tabindex="-1" role="dialog" aria-labelledby="addFamilyMemberModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -293,39 +304,7 @@
         </div>
         <?php require 'addressScript.php'; ?>
         </div>
-        <br>
-        <div class="container1">
-            <h2>Evacuation Site Status</h2>
-
-            <?php if ($result): ?>
-                <table class="table ">
-                    <thead>
-                        <tr>
-                            <th>Evacuation Center</th>
-                            <th>Max Capacity</th>
-                            <th>Current Capacity -Families</th>
-                            <th>Status</th>
-                            
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                            <tr>
-                                <td><?= $row['evacName']; ?></td>
-                                <td><?= $row['max_capacity']; ?></td>
-                                <td><?= $row['current_capacity']; ?></td>
-                                <td><?= $row['is_full'] ? '<span style=color:red>Full</span>' : '<span style=color:green>Available</span>'; ?></td>
-                                
-                            </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p>No evacuation centers found.</p>
-            <?php endif; ?>
-        </div>
     </main>
-    
     <script>
         function calculateAge() {
             const dobInput = document.getElementById('dateOfBirth');
@@ -347,6 +326,24 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
     </script>
     <script src="family_map.js"></script>
+    <script>
+
+        var iconUrl = "images/building-solid.svg";
+
+        var evacMarker = L.icon({
+        iconUrl: iconUrl,  // Use the color-specific SVG based on status
+        iconSize: [35, 35], // Size of the icon
+        iconAnchor: [17, 35], // Anchor point of the icon
+        popupAnchor: [0, -35], // Where the popup shows up
+    });
+
+        if (<?php echo json_encode($evacLat); ?> && <?php echo json_encode($evacLon); ?>) {
+            var evacMarker = L.marker([<?php echo $evacLat; ?>, <?php echo $evacLon; ?>], {icon: evacMarker}).addTo(map)
+                .bindPopup("Evacuation Center: <?php echo $evacName; ?>");
+        } else {
+            console.log("Evacuation center not registered for this family.");
+        }
+    </script>
 </body>
 
 </html>

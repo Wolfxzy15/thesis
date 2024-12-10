@@ -14,7 +14,7 @@ SELECT evac.evacID, evac.evacName, evac.max_capacity,
         WHEN IFNULL(SUM(fam.num_members), 0) >= (evac.max_capacity * 0.8) THEN 'Almost Full'
         ELSE 'Available'
     END AS status,
-    evac.latitude, evac.longitude
+    evac.latitude, evac.longitude, evac.height, evac.width
 FROM tbl_evac_centers evac
 LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
 GROUP BY evac.evacID";
@@ -25,7 +25,43 @@ $evacData = []; // Store evacuation centers data
 while ($row = mysqli_fetch_assoc($result)) {
     $evacData[] = $row;
 }
+
+// Handle update evacuation center request
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
+    $evacID = $_POST['evacID'];
+    $evacName = $_POST['evacName'];
+    $evacHeight = $_POST['evacHeight'];
+    $evacWidth = $_POST['evacWidth'];
+
+    // Calculate the max capacity based on the given formula
+    $maxCapacity = ceil(($evacWidth * 39.3701) / 50) * ceil(($evacHeight * 39.3701) / 105);
+
+    $updateSql = "UPDATE tbl_evac_centers SET evacName = ?, height = ?, width = ?, max_capacity = ? WHERE evacID = ?";
+    if ($stmt = mysqli_prepare($conn, $updateSql)) {
+        mysqli_stmt_bind_param($stmt, 'ssiii', $evacName, $evacHeight, $evacWidth, $maxCapacity, $evacID);
+        if (mysqli_stmt_execute($stmt)) {
+            echo "<script>alert('Evacuation Center Updated Successfully');</script>";
+        } else {
+            echo "<script>alert('Error updating Evacuation Center');</script>";
+        }
+    }
+}
+
+// Handle delete evacuation center request
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
+    $evacID = $_POST['evacID'];
+    $deleteSql = "DELETE FROM tbl_evac_centers WHERE evacID = ?";
+    if ($stmt = mysqli_prepare($conn, $deleteSql)) {
+        mysqli_stmt_bind_param($stmt, 'i', $evacID);
+        if (mysqli_stmt_execute($stmt)) {
+            echo "<script>alert('Evacuation Center Deleted Successfully');</script>";
+        } else {
+            echo "<script>alert('Error deleting Evacuation Center');</script>";
+        }
+    }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,108 +80,154 @@ while ($row = mysqli_fetch_assoc($result)) {
 </head>
 <body>
 <?php include 'include/sidebar.php'; ?>
+
 <main>
-<div class="container1">
-    <h2>Evacuation Centers in Brgy. Tabuc Suba, Jaro, Iloilo City</h2>
+    <div class="container1">
+        <h2>Evacuation Centers in Brgy. Tabuc Suba, Jaro, Iloilo City</h2>
+        <div id='map' style="height: 600px;"></div>
+    </div>
 
-    <div id='map' style="height: 600px;"></div>
-</div>
-<br>
-<table class="table table-light">
-    <thead>
-        <tr>
-            <th scope="col">LEGEND</th>
-            <th scope="col">Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <th scope="row"><i class="fa-solid fa-building"></i></th>
-            <td>- Evacuation Centers</td>
-        </tr>
-    </tbody>
-</table>
+    <br>
+    <table class="table table-light">
+        <thead>
+            <tr>
+                <th scope="col">LEGEND</th>
+                <th scope="col">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row"><i class="fa-solid fa-building"></i></th>
+                <td>- Evacuation Centers</td>
+            </tr>
+        </tbody>
+    </table>
 
-<div class="container1">
-    <h2>Evacuation Site Status</h2>
-    <?php if ($result): ?>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Evacuation Center</th>
-                    <th>Max Capacity</th>
-                    <th>Current Capacity</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($evacData as $row): ?>
+    <div class="container1">
+        <h2>Evacuation Site Status</h2>
+        <?php if ($result): ?>
+            <table class="table">
+                <thead>
                     <tr>
-                        <td><?= $row['evacName']; ?></td>
-                        <td><?= $row['max_capacity']; ?></td>
-                        <td><?= $row['current_capacity']; ?></td>
-                        <td>
-                            <?php 
-                            if ($row['status'] === 'Full') {
-                                echo '<span style="color:red">Full</span>';
-                            } elseif ($row['status'] === 'Almost Full') {
-                                echo '<span style="color:orange">Almost Full</span>';
-                            } else {
-                                echo '<span style="color:green">Available</span>';
-                            }
-                            ?>
-                        </td>
+                        <th>Evacuation Center</th>
+                        <th>Max Capacity</th>
+                        <th>Current Capacity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else: ?>
-        <p>No evacuation centers found.</p>
-    <?php endif; ?>
-</div>
+                </thead>
+                <tbody>
+                    <?php foreach ($evacData as $row): ?>
+                        <tr>
+                            <td><?= $row['evacName']; ?></td>
+                            <td><?= $row['max_capacity']; ?></td>
+                            <td><?= $row['current_capacity']; ?></td>
+                            <td>
+                                <?php 
+                                if ($row['status'] === 'Full') {
+                                    echo '<span style="color:red">Full</span>';
+                                } elseif ($row['status'] === 'Almost Full') {
+                                    echo '<span style="color:orange">Almost Full</span>';
+                                } else {
+                                    echo '<span style="color:green">Available</span>';
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <!-- Update Form -->
+                                <button class="btn btn-warning" data-toggle="modal" data-target="#updateModal" onclick="populateUpdateForm(<?= $row['evacID']; ?>, '<?= $row['evacName']; ?>', <?= $row['height']; ?>, <?= $row['width']; ?>)">Update</button>
+                                <!-- Delete Form -->
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="evacID" value="<?= $row['evacID']; ?>">
+                                    <button class="btn btn-danger" type="submit" name="delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>No evacuation centers found.</p>
+        <?php endif; ?>
+    </div>
 
-<script>
-// Default coordinates for the map (Brgy. Tabuc Suba)
-var defaultLat = <?= $defaultLat; ?>;
-var defaultLong = <?= $defaultLong; ?>;
-var evacCenters = <?= json_encode($evacData); ?>;
+    <!-- Update Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Update Evacuation Center</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="evacName">Evacuation Center Name</label>
+                            <input type="text" class="form-control" id="evacName" name="evacName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="evacHeight">Height</label>
+                            <input type="number" class="form-control" id="evacHeight" name="evacHeight" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="evacWidth">Width</label>
+                            <input type="number" class="form-control" id="evacWidth" name="evacWidth" required>
+                        </div>
+                        <input type="hidden" id="evacID" name="evacID">
+                        <button type="submit" name="update" class="btn btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-// Initialize the map centered at Brgy. Tabuc Suba
-var map = L.map('map').setView([defaultLat, defaultLong], 16);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    <script>
+        // Initialize Leaflet map
+        var map = L.map('map').setView([<?= $defaultLat ?>, <?= $defaultLong ?>], 13); // Default to Brgy. Tabuc Suba
 
-// Add evacuation centers to the map
-evacCenters.forEach(function(evac) {
-    var evacLat = evac.latitude;
-    var evacLong = evac.longitude;
-    var evacName = evac.evacName;
-    var status = evac.status;
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-    // Default icon path based on the status
-    var iconUrl = "images/building-solid-green.svg"; // Default to green (Available)
+        // Function to get the appropriate icon URL based on the status
+        function getStatusIcon(status) {
+            if (status === 'Full') {
+                return 'images/building-solid-red.svg'; // Red icon for full
+            } else if (status === 'Almost Full') {
+                return 'images/building-solid-orange.svg'; // Orange icon for almost full
+            } else {
+                return 'images/building-solid-green.svg'; // Green icon for available
+            }
+        }
 
-    // Change icon based on status
-    if (status === "Full") {
-        iconUrl = "images/building-solid-red.svg"; // Red for Full
-    } else if (status === "Almost Full") {
-        iconUrl = "images/building-solid-orange.svg"; // Orange for Almost Full
-    }
+        // Add markers for each evacuation center
+        <?php foreach ($evacData as $evac): ?>
+            var statusIcon = getStatusIcon("<?= $evac['status']; ?>");
 
-    var evacIcon = L.icon({
-        iconUrl: iconUrl,  // Use the color-specific SVG based on status
-        iconSize: [35, 35], // Size of the icon
-        iconAnchor: [17, 35], // Anchor point of the icon
-        popupAnchor: [0, -35], // Where the popup shows up
-    });
+            L.marker([<?= $evac['latitude']; ?>, <?= $evac['longitude']; ?>], {
+                icon: L.icon({
+                    iconUrl: statusIcon,
+                    iconSize: [35, 35], // Size of the marker
+                    iconAnchor: [17, 35], // Position of the marker
+                    popupAnchor: [0, -35], // Position of the popup
+                    shadowSize: [0, 0], // Remove shadow
+                })
+            }).addTo(map)
+              .bindPopup("<b><?= $evac['evacName']; ?></b><br>Capacity: <?= $evac['max_capacity']; ?>");
 
-    // Add marker to the map with the appropriate colored icon
-    L.marker([evacLat, evacLong], { icon: evacIcon }).addTo(map)
-        .bindTooltip(evacName)
-        .openTooltip();
-});
+        <?php endforeach; ?>
 
-</script>
-
+        // Function to populate the update form
+        function populateUpdateForm(evacID, evacName, evacHeight, evacWidth) {
+            document.getElementById('evacID').value = evacID;
+            document.getElementById('evacName').value = evacName;
+            document.getElementById('evacHeight').value = evacHeight;
+            document.getElementById('evacWidth').value = evacWidth;
+        }
+    </script>
 </main>
 </body>
 </html>
